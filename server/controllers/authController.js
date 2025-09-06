@@ -21,7 +21,7 @@ exports.register = async (req, res) => {
         await user.save();
 
         const msg = `Hello ${name},\nYour owner account has been successfully created.\nThank You.`;
-        await sendMail(email, 'Successfully Registered', msg);
+        // await sendMail(email, 'Successfully Registered', msg);
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
