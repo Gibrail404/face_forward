@@ -2,15 +2,31 @@
 
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
+
+  useEffect(() => {
+    // Redirect to home if token exists
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        router.replace("/"); // replace so user can't go back to login with back button
+      }
+    } catch (e) {
+      // localStorage might be unavailable in some envs — ignore
+      console.warn("Could not access localStorage", e);
+    }
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,13 +50,11 @@ export default function LoginPage() {
       if (res.ok) {
         toast.success("✅ Login successful!", { position: "top-right" });
 
-        // Save token (optional)
+        // Save token
         localStorage.setItem("token", data?.token);
 
-        // Redirect after toast
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 2000);
+        // Redirect to home (use router)
+        router.replace("/");
       } else {
         toast.error(data.message || "❌ Invalid username or password", { position: "top-right" });
       }

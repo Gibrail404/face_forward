@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
@@ -26,6 +27,13 @@ export default function Attendance() {
   );
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
+  const { checking, isAuthed } = value;
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
 
   // Fetch attendance data from API
   useEffect(() => {

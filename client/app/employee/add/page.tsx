@@ -4,11 +4,18 @@ import AddEmployee from "@/components/AddEmplyee";
 import AllEmployees from "@/components/AllEmployees";
 import FaceWidget from "@/components/face";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import aiImage from "@/public/static/ai.gif"
 
 export default function Employee() {
   const [updateUser, setUpdateUser] = useState({});
+  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
+  const { checking, isAuthed } = value;
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
   return (
     <>
       <Navbar />
