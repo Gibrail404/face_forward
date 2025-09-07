@@ -86,29 +86,41 @@ exports.getEmployee = async (req, res) => {
 
       if (distance > 0.96) {
         console.log("Matched user:", bestMatch);
-        const empId = bestMatch._id;
-        const emp = await Employee.findById(empId);
 
+        const emp = await Employee.findById(bestMatch._id);
         const today = new Date();
-        const dateOnly = new Date(today.toDateString()); // strip time
-        let attendance = await Attendance.findOne({ emp_id: bestMatch.emp_id, date: dateOnly });
+        const dateOnly = new Date(today.toDateString()); // strip time part
+
+        // Find today's attendance
+        let attendance = await Attendance.findOne({
+          emp_id: bestMatch._id,
+          date: dateOnly,
+        });
+
         const currentTime = new Date().toTimeString().split(" ")[0]; // HH:MM:SS
 
         if (!attendance) {
           // First recognition -> punch_in
-          attendance = await Attendance.create({
-            emp_id: bestMatch.emp_id,
+          attendance = new Attendance({
+            emp_id: bestMatch._id,
             date: dateOnly,
             time: { punch_in: currentTime, punch_out: null },
             status: "Pending",
           });
 
-          await sendMail(emp.email, "Punch In Successful", `Hello ${emp.name}, you punched in at ${currentTime}`);
-        } else if (!attendance.time.punch_out) {
-          // Second recognition -> punch_out
-          attendance.time.punch_out = currentTime;
+          await attendance.save();
 
-          // Calculate total working hours
+          await sendMail(
+            emp.email,
+            "Punch In Successful",
+            `Hello ${emp.name}, you punched in at ${currentTime}`
+          );
+        } else {
+          // Update punch_out every time
+          attendance.time.pun
+          ch_out = currentTime;
+
+          // Calculate working hours
           const [h1, m1, s1] = attendance.time.punch_in.split(":").map(Number);
           const [h2, m2, s2] = attendance.time.punch_out.split(":").map(Number);
 
@@ -121,13 +133,18 @@ exports.getEmployee = async (req, res) => {
           attendance.status = diffHrs >= 8 ? "Present" : "Absent";
           await attendance.save();
 
-          await sendMail(
-            emp.email,
-            "Punch Out Successful",
-            `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(2)} hrs`
-          );
+          // 📧 Only send mail if worked >= 8 hours
+          if (diffHrs >= 8) {
+            await sendMail(
+              emp.email,
+              "Punch Out Successful",
+              `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(
+                2
+              )} hrs`
+            );
+          }
         }
-      } else {
+      }else {
         console.log("No registered user found (too different)");
       }
 
