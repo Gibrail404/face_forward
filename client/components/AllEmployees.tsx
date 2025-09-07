@@ -13,21 +13,31 @@ interface Employee {
 
 export default function AllEmployees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [limit, setLimit] = useState<number>(10); // Default 10
+  const [limit, setLimit] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
 
-  // 🔹 Fetch employees (reusable)
+  // 🔹 Fetch employees
   const fetchEmployees = async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:5000/api/employees/list", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) throw new Error("Failed to fetch employees");
+
       const json = await res.json();
-      console.log("res", json);
-      setEmployees(json.data || []); // ensure array
+
+      if (Array.isArray(json)) {
+        setEmployees(json);
+      } else if (Array.isArray(json.data)) {
+        setEmployees(json.data);
+      } else {
+        setEmployees([]);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching employees:", err);
+      setEmployees([]);
     }
   };
 
@@ -35,7 +45,7 @@ export default function AllEmployees() {
     fetchEmployees();
   }, []);
 
-  // Pagination logic
+  // Pagination
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
   const paginatedEmployees = employees.slice(startIndex, endIndex);
@@ -43,18 +53,21 @@ export default function AllEmployees() {
 
   const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setLimit(parseInt(e.target.value));
-    setPage(1); // reset to first page
+    setPage(1);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this employee?")) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/employees/delete/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) fetchEmployees(); // refresh list
+      const res = await fetch(
+        `http://localhost:5000/api/employees/delete/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) fetchEmployees();
     } catch (err) {
       console.error("Failed to delete employee:", err);
     }
