@@ -1,5 +1,6 @@
 // app/login/page.tsx
 'use client';
+import Chatbot from "@/app/help/page";
 import AddEmployee from "@/components/AddEmplyee";
 import AllEmployees from "@/components/AllEmployees";
 import Navbar from "@/components/Navbar";
@@ -33,6 +34,7 @@ export default function Employee() {
         <div className="w-full max-w-6xl">
           <AllEmployees updateUser={updateUser} setUpdateUser={setUpdateUser} />
         </div>
+         <Chatbot />
       </div>
     </>
   );

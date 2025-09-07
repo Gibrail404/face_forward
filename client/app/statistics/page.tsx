@@ -3,6 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Chatbot from "../help/page";
 
 // 👇 Dynamically import Plot with SSR disabled
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -126,6 +127,7 @@ export default function AttendanceStats() {
           <p>No data available</p>
         )}
       </div>
+       <Chatbot />
     </div>
   );
 }
