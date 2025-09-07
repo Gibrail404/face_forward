@@ -6,7 +6,10 @@ const employeeSchema = new mongoose.Schema({
   department: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   hiringDate: { type: Date, default: Date.now },
-  faceEncoding: { type: [Number] }, // store face embeddings
+  faceEncoding: {
+    type: [Number],  // store as array of floats
+    index: "vector"  // MongoDB Atlas Vector Search index
+  },
 });
 
 module.exports = mongoose.model('Employee', employeeSchema);
