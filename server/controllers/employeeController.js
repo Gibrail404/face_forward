@@ -129,6 +129,7 @@ exports.getEmployee = async (req, res) => {
         }
       } else {
         console.log("No registered user found (too different)");
+        return res.status(404).json({ message: "Employee not recognized" });
       }
 
     } else {
