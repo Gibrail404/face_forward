@@ -1,20 +1,20 @@
 const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
-  emp_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-  date: { type: Date, default: Date.now },
-  time: {
-    punch_in: { 
-      type: String, 
-      default: () => new Date().toTimeString().split(' ')[0] 
-    },
-    punch_out: { 
-      type: String, 
-      default: null 
-    }
+  emp_id: { type: String, required: true },  // using employee code, not ObjectId
+  date: { 
+    type: Date, 
+    default: () => new Date().setHours(0, 0, 0, 0)  // store only the date
   },
-  status: { type: String, enum: ['Present', 'Absent'], default: 'Present' },
+  time: {
+    punch_in: { type: String, default: null },   // set when punching in
+    punch_out: { type: String, default: null }   // set when punching out
+  },
+  status: { 
+    type: String, 
+    enum: ['Present', 'Absent', 'Pending'], 
+    default: 'Pending' 
+  },
 });
-
 
 module.exports = mongoose.model('Attendance', attendanceSchema);

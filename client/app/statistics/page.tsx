@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
@@ -17,6 +18,12 @@ interface AttendanceData {
 export default function AttendanceStats() {
   const [todayData, setTodayData] = useState<AttendanceData | null>(null);
   const [last7DaysData, setLast7DaysData] = useState<AttendanceData[]>([]);
+  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
+  const { checking, isAuthed } = value;
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
 
   useEffect(() => {
     // ✅ Mock Data - replace with API call

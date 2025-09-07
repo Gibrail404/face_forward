@@ -350,7 +350,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
 
 
   return (
-    <div className="p-6 rounded-xl mt-22">
+    <div className="p-10 rounded-xl ">
       <h2 className="text-xl font-bold mb-4 text-center">{`${Object.keys(updateUser).length !== 0 ? "Update Employee Data" : "Add New Employee"}`}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -393,7 +393,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
             <button
               type="button"
               onClick={startCamera}
-              className="bg-blue-950 text-white px-4 py-2 rounded-lg w-full shadow-blue-700 shadow-2xs "
+              className="bg-blue-950 w-full flex gap-2 items-center justify-center hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs border-none transition"
             >
               Take Photo
             </button>
@@ -404,13 +404,13 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-green-500 text-white px-4 py-2 cursor-pointer"
+            className="bg-white text-black rounded-lg shadow-blue-700 shadow-2xs hover:bg-blue-700 px-4 py-2 cursor-pointer hover:text-white"
           >
             Submit
           </button>
           <button
             type="reset"
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-blue-400"
+            className="bg-white text-black rounded-lg shadow-blue-700 shadow-2xs hover:bg-blue-700 px-4 py-2 cursor-pointer hover:text-white"
             onClick={() => {
               setFormData({ emp_id: "", name: "", department: "", email: "" });
               setStatus("Click take photo to capture photo");
@@ -423,7 +423,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           </button>
           {photo ? (<button
             type="reset"
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-blue-400"
+            className="bg-white text-black rounded-lg shadow-blue-700 shadow-2xs hover:bg-blue-700 px-4 py-2 cursor-pointer hover:text-white"
             onClick={() => {
               setPhoto(null);
               setShowGif(false);
@@ -466,7 +466,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
       )}
 
       {/* Status */}
-      <div className="mt-6 px-6 py-3 bg-white shadow-md rounded-xl text-center">
+      <div className="mt-6 px-6 py-3 bg-white shadow-md rounded-xl text-center max-w-max ms-auto me-auto">
         <p className="text-gray-700 font-medium">{status}</p>
       </div>
     </div>

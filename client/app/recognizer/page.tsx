@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
+import { useAuth } from "@/hooks/useAuth";
 
 const COOLDOWN_MS = 3000; // 3 seconds cooldown per face
 
@@ -11,6 +12,12 @@ export default function FaceDetectionWithAPI() {
   const lastLogTime = useRef<Map<number, number>>(new Map());
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [faceNames, setFaceNames] = useState<Map<number, string>>(new Map());
+  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
+  const { checking, isAuthed } = value;
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
 
   useEffect(() => {
     const loadModels = async () => {

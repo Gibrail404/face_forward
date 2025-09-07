@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
@@ -26,6 +27,13 @@ export default function Attendance() {
   );
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
+  const { checking, isAuthed } = value;
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
 
   // Fetch attendance data from API
   useEffect(() => {
@@ -95,7 +103,7 @@ export default function Attendance() {
           {/* Download Excel */}
           <button
             onClick={exportToExcel}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            className="bg-blue-950 flex gap-2 items-center hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs border-none transition"
           >
             Download Excel
           </button>
