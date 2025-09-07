@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/utils/api";
 import { useState, useEffect } from "react";
 
 interface Employee {
@@ -19,19 +20,12 @@ export default function AllEmployees() {
   // 🔹 Fetch employees
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/employees/list", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const {data} = await api.get('/api/employees/list');
 
-      if (!res.ok) throw new Error("Failed to fetch employees");
-
-      const json = await res.json();
-
-      if (Array.isArray(json)) {
-        setEmployees(json);
-      } else if (Array.isArray(json.data)) {
-        setEmployees(json.data);
+      if (Array.isArray(data)) {
+        setEmployees(data);
+      } else if (Array.isArray(data?.data)) {
+        setEmployees(data?.data);
       } else {
         setEmployees([]);
       }
