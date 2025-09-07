@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 
 const SIMILARITY_THRESHOLD = 0.96; // strict matching
@@ -40,6 +40,7 @@ export default function FaceDetectionWithAPI() {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const loopRef = useRef<number | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const cachedFaces = useRef<CachedFace[]>([]);
 
@@ -51,6 +52,7 @@ export default function FaceDetectionWithAPI() {
             await faceapi.nets.faceExpressionNet.loadFromUri("/models");
 
             await startCamera();
+            setLoading(false); // models + camera ready
             startDetectionLoop();
         };
 
@@ -178,12 +180,36 @@ export default function FaceDetectionWithAPI() {
     };
 
     return (
-        <div className="relative w-full max-w-2xl mx-auto">
-            <video ref={videoRef} className="w-full h-auto" autoPlay muted />
-            <canvas
-                ref={canvasRef}
-                className="absolute top-0 left-0 w-full h-full pointer-events-none"
-            />
+        <div className="relative w-full h-screen bg-gray-900 flex justify-center items-center">
+            {/* Camera container */}
+            {/* Home button */}
+            <button
+                className="absolute top-12 right-24 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition z-10"
+                onClick={() => {
+                    window.location.href = "/";
+                }}
+            >
+                Home
+            </button>
+            <div className="relative w-full max-w-2xl">
+                {loading && (
+                    <div className="absolute inset-0 flex justify-center items-center bg-gray-900 bg-opacity-70 z-20">
+                        {/* Circular loader */}
+                        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                )}
+
+                <video
+                    ref={videoRef}
+                    className="w-full h-auto rounded-lg shadow-lg"
+                    autoPlay
+                    muted
+                />
+                <canvas
+                    ref={canvasRef}
+                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                />
+            </div>
         </div>
     );
 }
