@@ -93,7 +93,7 @@ exports.getEmployee = async (req, res) => {
 
         // Find today's attendance
         let attendance = await Attendance.findOne({
-          emp_id: bestMatch._id,
+          emp_id: bestMatch.emp_id,
           date: dateOnly,
         });
 
@@ -102,7 +102,9 @@ exports.getEmployee = async (req, res) => {
         if (!attendance) {
           // First recognition -> punch_in
           attendance = new Attendance({
-            emp_id: bestMatch._id,
+            emp_id: bestMatch.emp_id,
+            name: bestMatch.name,
+            department: bestMatch.department,
             date: dateOnly,
             time: { punch_in: currentTime, punch_out: null },
             status: "Pending",
@@ -117,8 +119,7 @@ exports.getEmployee = async (req, res) => {
           );
         } else {
           // Update punch_out every time
-          attendance.time.pun
-          ch_out = currentTime;
+          attendance.time.punch_out = currentTime;
 
           // Calculate working hours
           const [h1, m1, s1] = attendance.time.punch_in.split(":").map(Number);
@@ -129,8 +130,10 @@ exports.getEmployee = async (req, res) => {
 
           const diffMs = punchOutDate - punchInDate;
           const diffHrs = diffMs / (1000 * 60 * 60);
+          const diffMins = diffMs / (1000 * 60); // gives minutes
 
-          attendance.status = diffHrs >= 8 ? "Present" : "Absent";
+
+          attendance.status = diffMins >= 2 ? "Present" : "Absent"; // demo : at least 2 mins for present
           await attendance.save();
 
           // 📧 Only send mail if worked >= 8 hours
@@ -144,7 +147,7 @@ exports.getEmployee = async (req, res) => {
             );
           }
         }
-      }else {
+      } else {
         console.log("No registered user found (too different)");
         return res.status(404).json({ message: "Employee not recognized" });
       }
@@ -168,7 +171,7 @@ exports.getEmployee = async (req, res) => {
         department: bestMatch.department,
         email: bestMatch.email
       },
-      similarityScore: bestMatch.score // lower = closer for euclidean
+      similarityScore: bestMatch.score, // lower = closer for euclidean
     });
   } catch (err) {
     console.error("Error in getEmployee:", err);

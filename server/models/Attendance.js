@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
-  emp_id: { type: String, required: true },  // using employee code, not ObjectId
+  emp_id: { type: String, required: true },  // using employee code,
+  name: { type: String, required: true },
+  department: { type: String, required: true },
   date: { 
     type: Date, 
     default: () => new Date().setHours(0, 0, 0, 0)  // store only the date
