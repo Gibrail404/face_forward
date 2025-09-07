@@ -66,7 +66,7 @@ export default function AllEmployees() {
 
       {paginatedEmployees.length === 0 ? (
         <div className="flex justify-center">
-          <img src="/static/NoRec.png" alt="NoRecord" className="w-[70%]" />
+          <img src="/static/NoRec.png" alt="NoRecord" className="w-[70%] object-none" />
         </div>
       ) : (
         <>

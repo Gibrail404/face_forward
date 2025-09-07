@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
+import { FaArrowLeft } from "react-icons/fa";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+   const pathname = usePathname();
 
   return (
     <nav className="fixed w-full top-0 left-0 z-50 bg-transparent">
@@ -16,7 +20,13 @@ export default function Navbar() {
             alt="logo"
             className="w-9 drop-shadow-md"
           />
-          <h6 className="text-lg font-semibold tracking-wide text-white">
+          <h6 
+          // className=" text-white"
+          className={clsx(
+              "text-lg font-semibold tracking-wide",
+              pathname === "/" ? "text-white" : "text-blue-950"
+            )}
+          >
             Face Forward
           </h6>
         </div>
@@ -25,20 +35,31 @@ export default function Navbar() {
         <div className="flex items-center space-x-6">
           <Link
             href="/"
-            className="text-white hover:text-indigo-300 transition font-medium"
+            // className="text-white hover:text-indigo-300 transition font-medium"
+            className={clsx(
+              "hover:text-blue-800 transition font-medium",
+              pathname === "/" ? "text-white" : "text-blue-950"
+            )}
           >
             Home
           </Link>
 
           {user ? (
             <>
-              <span className="text-sm font-medium text-white px-3 py-1 rounded-lg">
+              <span 
+              // className="text-sm font-medium text-white px-3 py-1 rounded-lg"
+              className={clsx(
+              "hover:text-blue-800 transition font-medium",
+              pathname === "/" ? "text-white" : "text-blue-950"
+            )}
+              >
                 Hey, {user.name}
               </span>
               <button
                 onClick={logout}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-none border-none transition"
+                className="bg-blue-950 flex gap-2 items-center hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs border-none transition"
               >
+                <FaArrowLeft />
                 Logout
               </button>
             </>
@@ -46,7 +67,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-white hover:text-indigo-300 transition font-medium"
+                className="text-white hover:text-slate-300 transition font-medium bg-blue-950 px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs "
               >
                 Login
               </Link>
