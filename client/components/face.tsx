@@ -87,6 +87,7 @@ export default function FaceMoodBox({
   };
 
   return (
+    
     <div className="flex flex-col items-center">
       <video
         ref={videoRef}
@@ -97,7 +98,7 @@ export default function FaceMoodBox({
       />
       <button
         onClick={handleEnroll}
-        className="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg"
+        className=" px-4 bg-blue-950 text-white py-2 hover:bg-blue-700 transition rounded-lg shadow-blue-700 shadow-md mt-4"
       >
         Confirm (Enroll)
       </button>

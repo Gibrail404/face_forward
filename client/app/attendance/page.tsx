@@ -95,7 +95,7 @@ export default function Attendance() {
           {/* Download Excel */}
           <button
             onClick={exportToExcel}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            className="bg-blue-950 flex gap-2 items-center hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs border-none transition"
           >
             Download Excel
           </button>
