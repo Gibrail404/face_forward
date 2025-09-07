@@ -5,7 +5,7 @@
 // const AddEmployee = () => {
 //   const [formData, setFormData] = useState({
 //     emp_id: "",
-//     fullName: "",
+//     name: "",
 //     department: "",
 //     email: "",
 //   });
@@ -226,7 +226,7 @@
 //   // Submit
 //   const handleSubmit = (e: React.FormEvent) => {
 //     e.preventDefault();
-//     if (!formData.emp_id || !formData.fullName || !formData.department || !formData.email || !photo) {
+//     if (!formData.emp_id || !formData.name || !formData.department || !formData.email || !photo) {
 //       alert("Please fill all fields and capture a photo.");
 //       return;
 //     }
@@ -244,7 +244,7 @@
 //           onChange={handleChange}
 //         />
 //         <input
-//           name="fullName"
+//           name="name"
 //           placeholder="Full Name"
 //           className="border p-2 w-full"
 //           onChange={handleChange}
@@ -283,7 +283,7 @@
 //             type="reset"
 //             className="bg-gray-400 text-white px-4 py-2 rounded"
 //             onClick={() => {
-//               setFormData({ emp_id: "", fullName: "", department: "", email: "" });
+//               setFormData({ emp_id: "", name: "", department: "", email: "" });
 //               setPhoto(null);
 //             }}
 //           >
@@ -328,13 +328,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as faceapi from "face-api.js";
 
-const AddEmployee = () => {
+const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdateUser: any }) => {
+  
   const [formData, setFormData] = useState({
     emp_id: "",
-    fullName: "",
+    name: "",
     department: "",
     email: "",
   });
+
+  useEffect(() => {
+    if (updateUser && Object.keys(updateUser).length !== 0) {
+      setFormData(updateUser);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [updateUser]);
+
   const [photo, setPhoto] = useState<string | null>(null);
   const [tempPhoto, setTempPhoto] = useState<string | null>(null); // store before showing final
   const [showGif, setShowGif] = useState(false); // loader state
@@ -467,51 +476,51 @@ const AddEmployee = () => {
   // };
 
   const capturePhoto = () => {
-  if (videoRef.current && canvasRef.current) {
-    const context = canvasRef.current.getContext("2d");
-    if (context) {
-      // Match canvas to preview box size
-      const boxSize = 160; // same as w-40 h-40
-      canvasRef.current.width = boxSize;
-      canvasRef.current.height = boxSize;
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext("2d");
+      if (context) {
+        // Match canvas to preview box size
+        const boxSize = 160; // same as w-40 h-40
+        canvasRef.current.width = boxSize;
+        canvasRef.current.height = boxSize;
 
-      const videoWidth = videoRef.current.videoWidth;
-      const videoHeight = videoRef.current.videoHeight;
+        const videoWidth = videoRef.current.videoWidth;
+        const videoHeight = videoRef.current.videoHeight;
 
-      // Get square crop from center
-      const size = Math.min(videoWidth, videoHeight);
-      const sx = (videoWidth - size) / 2;
-      const sy = (videoHeight - size) / 2;
+        // Get square crop from center
+        const size = Math.min(videoWidth, videoHeight);
+        const sx = (videoWidth - size) / 2;
+        const sy = (videoHeight - size) / 2;
 
-      // Draw only the cropped square area into canvas
-      context.drawImage(
-        videoRef.current,
-        sx,
-        sy,
-        size,
-        size,
-        0,
-        0,
-        boxSize,
-        boxSize
-      );
+        // Draw only the cropped square area into canvas
+        context.drawImage(
+          videoRef.current,
+          sx,
+          sy,
+          size,
+          size,
+          0,
+          0,
+          boxSize,
+          boxSize
+        );
 
-      const dataUrl = canvasRef.current.toDataURL("image/png");
+        const dataUrl = canvasRef.current.toDataURL("image/png");
 
-      // Show GIF first
-      setShowGif(true);
-      setTempPhoto(dataUrl);
-      setPhoto(null);
+        // Show GIF first
+        setShowGif(true);
+        setTempPhoto(dataUrl);
+        setPhoto(null);
 
-      // Replace GIF with actual photo after 3s
-      setTimeout(() => {
-        setPhoto(dataUrl);
-        setShowGif(false);
-        setStatus("Photo captured 🎉");
-      }, 3000);
+        // Replace GIF with actual photo after 3s
+        setTimeout(() => {
+          setPhoto(dataUrl);
+          setShowGif(false);
+          setStatus("Photo captured 🎉");
+        }, 3000);
+      }
     }
-  }
-};
+  };
 
 
   // Stop camera
@@ -530,7 +539,7 @@ const AddEmployee = () => {
   // Submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.emp_id || !formData.fullName || !formData.department || !formData.email || !photo) {
+    if (!formData.emp_id || !formData.name || !formData.department || !formData.email ) {
       alert("Please fill all fields and capture a photo.");
       return;
     }
@@ -539,25 +548,28 @@ const AddEmployee = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold mb-4 text-center">Add New Employee</h2>
+      <h2 className="text-xl font-bold mb-4 text-center">{`${Object.keys(updateUser).length !== 0 ? "Update Employee Data" : "Add New Employee"}`}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           name="emp_id"
           placeholder="Employee ID (e.g. AGL0000)"
           className="border p-2 w-full"
           onChange={handleChange}
+          value={formData.emp_id}
         />
         <input
-          name="fullName"
+          name="name"
           placeholder="Full Name"
           className="border p-2 w-full"
           onChange={handleChange}
+          value={formData.name}
         />
         <input
           name="department"
           placeholder="Department"
           className="border p-2 w-full"
           onChange={handleChange}
+          value={formData.department}
         />
         <input
           name="email"
@@ -565,10 +577,11 @@ const AddEmployee = () => {
           type="email"
           className="border p-2 w-full"
           onChange={handleChange}
+          value={formData.email}
         />
 
         {/* Centered capture box */}
-        <div className="flex justify-center">
+        {updateUser && Object.keys(updateUser).length == 0 && <div className="flex justify-center">
           {photo ? (
             <img src={photo} alt="Captured" className="w-40 h-40 object-cover rounded border" />
           ) : showGif ? (
@@ -582,7 +595,7 @@ const AddEmployee = () => {
               Take Photo
             </button>
           )}
-        </div>
+        </div>}
 
         <div className="flex space-x-4 justify-center">
           <button
@@ -596,7 +609,7 @@ const AddEmployee = () => {
             type="reset"
             className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-blue-400"
             onClick={() => {
-              setFormData({ emp_id: "", fullName: "", department: "", email: "" });
+              setFormData({ emp_id: "", name: "", department: "", email: "" });
               setStatus("Click take photo to capture photo");
               setPhoto(null);
               setTempPhoto(null);

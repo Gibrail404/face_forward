@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { useState } from "react";
 
 export default function Employee() {
+  const [updateUser, setUpdateUser] = useState({});
   return (
     <>
       <Navbar />
@@ -13,12 +14,12 @@ export default function Employee() {
       <div className="flex flex-col items-center mt-6 space-y-10">
         {/* Add Employee Form */}
         <div className="w-full max-w-3xl">
-          <AddEmployee />
+          <AddEmployee updateUser={updateUser} setUpdateUser={setUpdateUser} />
         </div>
 
         {/* All Employees Table */}
         <div className="w-full max-w-6xl">
-          <AllEmployees />
+          <AllEmployees updateUser={updateUser} setUpdateUser={setUpdateUser} />
         </div>
       </div>
     </>
