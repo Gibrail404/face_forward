@@ -50,11 +50,13 @@ exports.updateEmployee = async (req, res) => {
 // get employee
 exports.getEmployee = async (req, res) => {
   try {
-    const { faceEncoding } = req.body; // embedding array from client
+    const { descriptor } = req.body; // embedding array from client
+    console.log("Received faceEncoding:", descriptor);
+    const faceEncoding = descriptor;
     if (!faceEncoding || !faceEncoding.length) {
       return res.status(400).json({ message: "Face encoding required" });
     }
-
+    
     // Run MongoDB Atlas vector search
     const result = await Employee.aggregate([
       {
@@ -63,11 +65,11 @@ exports.getEmployee = async (req, res) => {
           path: "faceEncoding",       // field in schema
           numCandidates: 50,          // how many to compare internally
           limit: 1,                   // top 1 match
-          index: "faceEncoding_index" // index name you created in Atlas
+          index: "vector_index_1" // index name you created in Atlas
         }
       }
     ]);
-
+    
     if (!result.length) {
       return res.status(404).json({ message: "Employee not recognized" });
     }
