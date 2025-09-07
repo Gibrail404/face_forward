@@ -218,59 +218,6 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
   };
 
 
-  // Submit
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!formData.emp_id || !formData.name || !formData.department || !formData.email || !photo) {
-  //     alert("Please fill all fields and capture a photo.");
-  //     return;
-  //   }
-
-  //   try {
-  //     // Create HTML image element for encoding
-  //     const img = new Image();
-  //     img.src = photo;
-  //     await new Promise((resolve) => (img.onload = resolve));
-
-  //     const detection = await faceapi
-  //       .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-  //       .withFaceLandmarks()
-  //       .withFaceDescriptor();
-
-  //     if (!detection) {
-  //       alert("Face encoding failed. Please retake photo.");
-  //       return;
-  //     }
-
-  //     const faceEncoding = Array.from(detection.descriptor);
-
-  //     // Send to backend API
-  //     const res = await fetch("http://localhost:5000/api/employees/add", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         emp_id: formData.emp_id,
-  //         name: formData.name,
-  //         department: formData.department,
-  //         email: formData.email,
-  //         faceEncoding,
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-  //     if (!res.ok) {
-  //       alert(data.message || "Error saving employee");
-  //       return;
-  //     }
-
-  //     setStatus("✅ Employee added successfully");
-  //     console.log("✅ Employee Data Saved:", data);
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Error encoding/saving employee");
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -430,7 +377,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
               setShowCamera(true);
             }}
           >
-            ReTake
+            Retake
           </button>) : null}
         </div>
       </form>
