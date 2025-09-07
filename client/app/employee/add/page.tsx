@@ -2,6 +2,7 @@
 'use client';
 import AddEmployee from "@/components/AddEmplyee";
 import AllEmployees from "@/components/AllEmployees";
+import FaceWidget from "@/components/face";
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
 
@@ -16,6 +17,10 @@ export default function Employee() {
         <div className="w-full max-w-3xl">
           <AddEmployee updateUser={updateUser} setUpdateUser={setUpdateUser} />
         </div>
+         {/* <div className="w-full max-w-3xl">
+          <FaceWidget />
+        </div>
+         */}
 
         {/* All Employees Table */}
         <div className="w-full max-w-6xl">
