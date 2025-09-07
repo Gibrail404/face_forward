@@ -1,9 +1,7 @@
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
-
 const faceapi = require('face-api.js');
-const canvas = require('canvas');
-const { Canvas, Image, ImageData } = canvas;
+const sendMail  = require('../utils/email');
 
 // Convert MongoDB encodings (Float32Array) back to descriptors
 function buildLabeledDescriptors(employees) {
@@ -12,52 +10,6 @@ function buildLabeledDescriptors(employees) {
         [new Float32Array(e.faceEncoding)]  // stored descriptor
     ));
 }
-
-// 📌 Recognize faces (from uploaded image, not webcam stream)
-// exports.startRecognition = async (req, res) => {
-//     try {
-//         const imgBuffer = req.file.buffer; // assuming multer upload
-//         const img = await canvas.loadImage(imgBuffer);
-
-//         const detections = await faceapi
-//             .detectAllFaces(img)
-//             .withFaceLandmarks()
-//             .withFaceDescriptors();
-
-//         if (!detections.length) {
-//             return res.status(404).json({ message: "No faces detected" });
-//         }
-
-//         const employees = await Employee.find();
-//         const labeledDescriptors = buildLabeledDescriptors(employees);
-//         const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors);
-
-//         let results = [];
-//         for (let d of detections) {
-//             const bestMatch = faceMatcher.findBestMatch(d.descriptor);
-//             if (bestMatch.label !== "unknown") {
-//                 const empId = bestMatch.label;
-//                 const today = new Date().toDateString();
-
-//                 const alreadyMarked = await Attendance.findOne({
-//                     employeeId: empId,
-//                     date: today
-//                 });
-
-//                 if (!alreadyMarked) {
-//                     await Attendance.create({ employeeId: empId, status: 'On Service', date: today });
-//                 }
-
-//                 results.push({ employeeId: empId, match: true });
-//             }
-//         }
-
-//         res.json({ matches: results });
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ message: "Server Error" });
-//     }
-// };
 
 exports.startRecognition = async (req, res) => {
   try {
@@ -91,14 +43,14 @@ exports.startRecognition = async (req, res) => {
 
     const today = new Date();
     const dateOnly = new Date(today.toDateString()); // strip time
-    let attendance = await Attendance.findOne({ employeeId: empId, date: dateOnly });
+    let attendance = await Attendance.findOne({ emp_id: empId, date: dateOnly });
 
     const currentTime = new Date().toTimeString().split(" ")[0]; // HH:MM:SS
 
     if (!attendance) {
       // First recognition -> punch_in
       attendance = await Attendance.create({
-        employeeId: empId,
+        emp_id: empId,
         date: dateOnly,
         time: { punch_in: currentTime, punch_out: null },
         status: "Pending",
@@ -125,7 +77,7 @@ exports.startRecognition = async (req, res) => {
       await sendMail(emp.email, "Punch Out Successful", `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(2)} hrs`);
     }
 
-    res.json({ employeeId: empId, match: true });
+    res.json({ emp_id: empId, match: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
@@ -135,7 +87,7 @@ exports.startRecognition = async (req, res) => {
 // 📌 Get attendance sheet
 exports.getAttendance = async (req, res) => {
     try {
-        const records = await Attendance.find().populate('employeeId');
+        const records = await Attendance.find().populate('emp_id');
         res.json(records);
     } catch (err) {
         console.error(err);
@@ -146,12 +98,12 @@ exports.getAttendance = async (req, res) => {
 // 📌 Download today attendance
 exports.downloadToday = async (req, res) => {
     const today = new Date().toDateString();
-    const records = await Attendance.find({ date: today }).populate('employeeId');
+    const records = await Attendance.find({ date: today }).populate('emp_id');
     res.json(records);
 };
 
 // 📌 Download all attendance
 exports.downloadAll = async (req, res) => {
-    const records = await Attendance.find().populate('employeeId');
+    const records = await Attendance.find().populate('emp_id');
     res.json(records);
 };

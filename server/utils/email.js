@@ -1,9 +1,8 @@
-import sgMail from '@sendgrid/mail';
-import 'dotenv/config';
+const sgMail = require('@sendgrid/mail');
 
 sgMail.setApiKey(process.env.EMAIL_API_KEY);
 
-export const sendMail = async (to,subject,message) => {
+const sendMail = async (to,subject,message) => {
   try {
     const msg = {
       to: to,
@@ -20,3 +19,5 @@ export const sendMail = async (to,subject,message) => {
     throw error;
   }
 }
+
+module.exports = sendMail;

@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { useAuth } from "../hooks/useAuth";
 import Link from "next/link";
 import Chatbot from "./help/page";
+import { FaUsers, FaCamera, FaClipboardList, FaChartBar } from "react-icons/fa";
 
 export default function HomePage() {
   const { user, logout } = useAuth();
@@ -34,7 +35,7 @@ export default function HomePage() {
           {!user ? (
             <div className="text-center space-y-6">
 
-              <h1 className="text-4xl md:text-5xl font-bold text-white">
+              <h1 className="text-4xl md:text-5xl font-bold text-white text leading-14">
                 Welcome to Smart Attendance System
               </h1>
               <p className="text-lg md:text-xl text-gray-400">
@@ -42,7 +43,7 @@ export default function HomePage() {
               </p>
               <Link
                 href="/login"
-                className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
+                className="bg-blue-950 text-white px-6 py-3  font-medium hover:bg-blue-700 transition rounded-lg shadow-blue-700 shadow-2xs"
               >
                 Get Started
               </Link>
@@ -53,18 +54,19 @@ export default function HomePage() {
                 Quick Actions
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 bg-slate-800 rounded-xl">
                 {[
-                  { href: "/employee/add", text: "Employees" },
-                  { href: "/recognizer", text: "Recognizer" },
-                  { href: "/attendance", text: "Attendance Sheet" },
-                  { href: "/statistics", text: "Statistics" },
+            { href: "/employee/add", text: "Employees", icon: <FaUsers /> },
+    { href: "/recognizer", text: "Recognizer", icon: <FaCamera /> },
+    { href: "/attendance", text: "Attendance Sheet", icon: <FaClipboardList /> },
+    { href: "/statistics", text: "Statistics", icon: <FaChartBar /> },
                 ].map((item, i) => (
                   <Link
                     key={i}
                     href={item.href}
-                    className="block text-center bg-white border rounded-xl shadow-md hover:shadow-xl p-4 font-medium text-gray-700 hover:text-indigo-600 transition"
+                    className="flex gap-2 text-center justify-center items-center bg-white border rounded-xl shadow-md hover:shadow-xl p-4 font-medium text-gray-700 hover:text-blue-950 transition"
                   >
+                     <span className="text-xl">{item.icon}</span>
                     {item.text}
                   </Link>
                 ))}

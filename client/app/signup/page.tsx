@@ -82,7 +82,7 @@ export default function SignupPage() {
                   pattern="owner[0-9]{2}"
                   title="Invalid ID"
                   required
-                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400 text-black"
                 />
               </div>
 
@@ -94,19 +94,19 @@ export default function SignupPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400 text-black"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
-                  type="email"
+                  type="email" 
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400 text-black"
                 />
               </div>
 

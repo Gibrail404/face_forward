@@ -1,112 +1,177 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import * as faceapi from "face-api.js";
+import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 
-export default function AttendancePage() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [status, setStatus] = useState("Initializing...");
-  const [modelsLoaded, setModelsLoaded] = useState(false);
+interface AttendanceRecord {
+  _id: string;
+  emp_id: {
+    name: string;
+    department: string;
+  };
+  time: {
+    punch_in: string | null;
+    punch_out: string | null;
+  };
+  date: string;
+  status: string;
+}
 
-  // Load face-api.js models
+export default function Attendance() {
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<AttendanceRecord[]>([]);
+  const [pageSize, setPageSize] = useState(25);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0] // today
+  );
+
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  // Fetch attendance data from API
   useEffect(() => {
-    const loadModels = async () => {
-      setStatus("Loading face recognition models...");
-      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-      await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-      await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
-      await faceapi.nets.faceExpressionNet.loadFromUri("/models");
-      setModelsLoaded(true);
-      setStatus("Models loaded. Starting camera...");
-      startVideo();
+    const fetchRecords = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/sheet");
+        const data = await res.json();
+        setRecords(data);
+      } catch (err) {
+        console.error("Failed to fetch records", err);
+      }
     };
-    loadModels();
+    fetchRecords();
   }, []);
 
-  // Start webcam
-  const startVideo = () => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      })
-      .catch(() => setStatus("Error accessing webcam"));
+  // Filter by selected date
+  useEffect(() => {
+    if (!records.length) return;
+
+    const filtered = records.filter(
+      (r) => r.date.split("T")[0] === selectedDate
+    );
+    setFilteredRecords(filtered);
+  }, [records, selectedDate]);
+
+  // Export Excel
+  const exportToExcel = () => {
+    if (!filteredRecords.length) return;
+
+    const ws = XLSX.utils.json_to_sheet(
+      filteredRecords.map((r) => ({
+        ID: r._id,
+        Name: r.emp_id?.name,
+        Department: r.emp_id?.department,
+        PunchIn: r.time?.punch_in || "-",
+        PunchOut: r.time?.punch_out || "-",
+        Date: r.date.split("T")[0],
+        Status: r.status,
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+    XLSX.writeFile(wb, `Attendance_${selectedDate}.xlsx`);
   };
 
-  // Detect face continuously
-  useEffect(() => {
-    if (!modelsLoaded) return;
-
-    const interval = setInterval(async () => {
-      if (videoRef.current && canvasRef.current) {
-        const detections = await faceapi
-          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceExpressions();
-
-        const displaySize = {
-          width: videoRef.current.width,
-          height: videoRef.current.height,
-        };
-
-        faceapi.matchDimensions(canvasRef.current, displaySize);
-
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvasRef.current
-          .getContext("2d")
-          ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
-        faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
-        faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
-
-        if (detections.length > 0) {
-          setStatus("Face detected ✅");
-          // 🚀 Call your backend to mark attendance
-          // fetch("http://localhost:5000/api/attendance/mark", {
-          //   method: "POST",
-          //   headers: {
-          //     "Content-Type": "application/json",
-          //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-          //   },
-          //   body: JSON.stringify({ employeeId: "EMP123" }),
-          // });
-        } else {
-          setStatus("No face detected ❌");
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [modelsLoaded]);
-
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 drop-shadow-md">
-        Attendance via Face Recognition
-      </h2>
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Attendance Records</h2>
 
-      <div className="relative shadow-xl rounded-xl overflow-hidden">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          width="640"
-          height="480"
-          className="rounded-xl"
-        />
-        <canvas
-          ref={canvasRef}
-          width="640"
-          height="480"
-          className="absolute top-0 left-0"
-        />
+        <div className="flex items-center space-x-4">
+          {/* Date filter */}
+          <input
+            type="date"
+            value={selectedDate}
+            max={today} // block future dates
+            onChange={(e) => {
+              const selected = e.target.value;
+              if (selected > today) {
+                alert("You cannot select a future date");
+                return;
+              }
+              setSelectedDate(selected);
+            }}
+            className="border p-2 rounded"
+          />
+
+          {/* Download Excel */}
+          <button
+            onClick={exportToExcel}
+            disabled={!filteredRecords.length} // disable if no records
+            className={`px-4 py-2 rounded ${
+              filteredRecords.length
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-gray-300 text-gray-600 cursor-not-allowed"
+            }`}
+          >
+            Download Excel
+          </button>
+        </div>
       </div>
 
-      <div className="mt-6 px-6 py-3 bg-white shadow-md rounded-xl text-center">
-        <p className="text-gray-700 font-medium">{status}</p>
+      {/* Page size */}
+      <div className="flex justify-end mb-2">
+        <label className="mr-2">Show</label>
+        <select
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+          className="border p-1 rounded"
+        >
+          <option value={25}>25</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
       </div>
+
+      {/* Attendance table or NoRec image */}
+      {filteredRecords.length ? (
+        <div className="overflow-x-auto shadow-md rounded">
+          <table className="w-full border-collapse border">
+            <thead>
+              <tr className="bg-gray-200 text-left">
+                <th className="border p-2">ID</th>
+                <th className="border p-2">Name</th>
+                <th className="border p-2">Department</th>
+                <th className="border p-2">Punch In</th>
+                <th className="border p-2">Punch Out</th>
+                <th className="border p-2">Date</th>
+                <th className="border p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.slice(0, pageSize).map((r) => (
+                <tr key={r._id} className="hover:bg-gray-50">
+                  <td className="border p-2">{r._id}</td>
+                  <td className="border p-2">{r.emp_id?.name}</td>
+                  <td className="border p-2">{r.emp_id?.department}</td>
+                  <td className="border p-2">{r.time?.punch_in || "-"}</td>
+                  <td className="border p-2">{r.time?.punch_out || "-"}</td>
+                  <td className="border p-2">{r.date.split("T")[0]}</td>
+                  <td
+                    className={`border p-2 font-semibold ${
+                      r.status === "Present"
+                        ? "text-green-600"
+                        : r.status === "Absent"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
+                  >
+                    {r.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center py-16">
+          <img
+            src="/static/NoRec.png"
+            alt="No Records"
+            className="w-64 h-64 object-contain"
+          />
+        </div>
+      )}
     </div>
   );
 }
