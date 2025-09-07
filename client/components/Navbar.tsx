@@ -9,7 +9,7 @@ import clsx from "clsx";
 export default function Navbar() {
   const { user, logout } = useAuth();
    const pathname = usePathname();
-   const isLightRoute = pathname === "/" || pathname === "/employee/add";
+   const isLightRoute = pathname === "/";
 
 
   return (

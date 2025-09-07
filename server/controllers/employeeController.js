@@ -133,7 +133,7 @@ exports.getEmployee = async (req, res) => {
           const diffMins = diffMs / (1000 * 60); // gives minutes
 
 
-          attendance.status = diffMins >= 2 ? "Present" : "Absent"; // demo : at least 2 mins for present
+          attendance.status = diffMins >= 1 ? "Present" : "Absent"; //at least 1 mins for present
           await attendance.save();
 
           // 📧 Only send mail if worked >= 8 hours
