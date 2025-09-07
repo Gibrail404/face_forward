@@ -1,23 +1,37 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as faceapi from "face-api.js";
-import { useAuth } from "@/hooks/useAuth";
 
-const COOLDOWN_MS = 3000; // 3 seconds cooldown per face
+const COOLDOWN_MS = 3000; // 3s cooldown for new faces
+const SIMILARITY_THRESHOLD = 0.96; // cosine similarity threshold
+const REMOVE_AFTER_MS = 5000; // remove faces not seen for 5s
+
+// helper to compute cosine similarity for Float32Array
+const cosineSimilarity = (a: Float32Array, b: Float32Array) => {
+  let dot = 0,
+    normA = 0,
+    normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+};
+
+type CachedFace = {
+  embedding: Float32Array;
+  name: string;
+  id?: string;
+  lastSeen: number;
+};
 
 export default function FaceDetectionWithAPI() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loopRef = useRef<number | null>(null);
-  const lastLogTime = useRef<Map<number, number>>(new Map());
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [faceNames, setFaceNames] = useState<Map<number, string>>(new Map());
-  const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
-  const { checking, isAuthed } = value;
 
-  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
-
-  if (!isAuthed) return null;
+  const cachedFaces = useRef<CachedFace[]>([]);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -25,7 +39,7 @@ export default function FaceDetectionWithAPI() {
       await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
       await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
       await faceapi.nets.faceExpressionNet.loadFromUri("/models");
-      setModelsLoaded(true);
+
       await startCamera();
       startDetectionLoop();
     };
@@ -56,6 +70,9 @@ export default function FaceDetectionWithAPI() {
   const startDetectionLoop = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
+    canvasRef.current.width = videoRef.current.videoWidth;
+    canvasRef.current.height = videoRef.current.videoHeight;
+
     const run = async () => {
       if (!videoRef.current || !canvasRef.current) return;
 
@@ -63,56 +80,71 @@ export default function FaceDetectionWithAPI() {
         .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
         .withFaceExpressions()
-        .withFaceDescriptors(); // include embeddings
+        .withFaceDescriptors();
 
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvasRef.current.getContext("2d");
       if (!ctx) return;
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const now = Date.now();
 
-      detections.forEach(async (det, idx) => {
-        const { box } = det.detection;
-        const x = box.x + box.width * 0.25; // adjust position if needed
-        const y = box.y;
-        const width = box.width;
-        const height = box.height;
+      for (const det of detections) {
+        const box = det.detection.box;
+        const descriptor = det.descriptor;
 
-        // Draw box
-        ctx.strokeStyle = "lime";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, width, height);
+        // find matching cached face by embedding similarity
+        let match: CachedFace | undefined = cachedFaces.current.find(
+          (f) => cosineSimilarity(f.embedding, descriptor) > SIMILARITY_THRESHOLD
+        );
 
-        // Get last API call timestamp for cooldown
-        const now = Date.now();
-        const lastTime = lastLogTime.current.get(idx) || 0;
+        let displayName = "Unknown";
 
-        if (now - lastTime > COOLDOWN_MS) {
-          lastLogTime.current.set(idx, now);
+        if (match) {
+          displayName = match.name;
+          match.lastSeen = now;
+        } else {
+          // new face: call API
+          try {
+            const res = await fetch("http://localhost:5000/api/employees/match", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ descriptor: Array.from(descriptor) }),
+            });
 
-          // Send descriptor to API for identification
-          const res = await fetch("http://localhost:5000/api/employees/match", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descriptor: Array.from(det.descriptor) }),
-          });
-          const data = await res.json();
-          const name = data?.user?.name || "Unknown";
+            const data = await res.json();
+            const name = data?.employee?.name || "Unknown";
+            displayName = name;
 
-          // Update state
-          setFaceNames((prev) => new Map(prev).set(idx, name));
+            cachedFaces.current.push({
+              embedding: descriptor,
+              name,
+              id: data?.employee?.id,
+              lastSeen: now,
+            });
+          } catch (err) {
+            console.error("Error fetching match:", err);
+          }
         }
 
-        // Draw name above box
-        ctx.fillStyle = "red";
+        // draw box
+        ctx.strokeStyle = displayName !== "Unknown" ? "lime" : "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+        // draw label
+        ctx.fillStyle = displayName !== "Unknown" ? "lime" : "red";
         ctx.font = "16px Arial";
-        const displayName = faceNames.get(idx) || "Unknown";
-        ctx.fillText(displayName, x, y - 8);
-      });
+        ctx.fillText(displayName, box.x, box.y - 8);
+      }
+
+      // remove old faces not seen for a while
+      cachedFaces.current = cachedFaces.current.filter(
+        (f) => now - f.lastSeen < REMOVE_AFTER_MS
+      );
     };
 
-    run(); // first run immediately
-    loopRef.current = window.setInterval(run, 200); // repeat every 200ms
+    run();
+    loopRef.current = window.setInterval(run, 200);
   };
 
   return (
