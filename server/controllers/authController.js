@@ -2,6 +2,7 @@ const User = require('../models/User');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const sendMail = require('../utils/email');
+const { upsertUserEmbedding } = require('../utils/qdrant');
 
 // Temporary OTP storage (can use MongoDB for persistence)
 let otpStore = {};
@@ -19,6 +20,9 @@ exports.register = async (req, res) => {
 
         const user = new User({ _id: id, username, name, email, password });
         await user.save();
+
+        // qdrant embedding upsert
+        await upsertUserEmbedding(user._id, descriptor, { name, email, username });
 
         const msg = `Hello ${name},\nYour owner account has been successfully created.\nThank You.`;
         // await sendMail(email, 'Successfully Registered', msg);

@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const sendMail = require('../utils/email');
 const faceUtil = require('../utils/faceRecognition');
+const User = require('../models/User');
+const { listAllPoints } = require("../utils/qdrant");
 
 // Add new employee
 exports.addEmployee = async (req, res) => {
@@ -80,10 +82,22 @@ exports.deleteEmployee = async (req, res) => {
 // List all employees
 exports.listEmployees = async (req, res) => {
     try {
-        const employees = await Employee.find();
+        const employees = await User.find();
         res.json(employees);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server Error" });
     }
+};
+
+exports.getAllQdrantUsers = async (req, res) => {
+  try {
+    // Get first 100 embeddings (increase limit if needed)
+    const result = await listAllPoints(100);
+
+    res.json(result);
+  } catch (err) {
+    console.error("Error fetching from Qdrant:", err);
+    res.status(500).json({ message: "Failed to fetch Qdrant data" });
+  }
 };

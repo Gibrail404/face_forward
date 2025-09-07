@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: { type: String, required: true },
   dateCreated: { type: Date, default: Date.now },
+  descriptor: [Number]
 });
 
 // password hashing before saving
