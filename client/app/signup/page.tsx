@@ -46,6 +46,10 @@ export default function SignupPage() {
       const data = await res.json();
       if (res.ok) {
         setSuccess("Registration successful!");
+        // Redirect (example)
+        setTimeout(() => {
+          window.location.href = "/"; // or dashboard
+        }, 1500);
         setError("");
       } else {
         setError(data.message || "Registration failed");
