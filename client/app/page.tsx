@@ -1,103 +1,88 @@
-// app/page.tsx
 'use client';
 
+import Navbar from "../components/Navbar";
+import { useAuth } from "../hooks/useAuth";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-interface User {
-  username: string;
-}
+import Chatbot from "./help/page";
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const verifyUser = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser({ username: data.username });
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
-    };
-
-    verifyUser();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/login";
-  };
+  const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
-      {/* Navbar */}
-      <nav className="bg-gray-900 text-white px-8 py-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
-        <div className="flex items-center space-x-3">
-          <img src="/static/icon3.png" alt="logo" className="w-9 drop-shadow-md" />
-          <h6 className="text-lg font-semibold tracking-wide">
-            Face Recognition Attendance Logger
-          </h6>
-        </div>
+    <div className="min-h-screen relative">
+      <Navbar />
 
-        <div className="flex items-center space-x-6">
-          <Link href="/" className="hover:text-gray-300 transition">Home</Link>
+      {/* Full Screen Background */}
+      <div
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: "url('/static/bg6.gif')",
+          backgroundRepeat: "repeat",       // repeat the GIF
+          backgroundSize: "contain",        // fit inside container
+          backgroundAttachment: "fixed",    // fixed position while scrolling
+          backgroundPosition: "left",      // align to the right
+        }}
+      ></div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 flex flex-col md:flex-row min-h-screen">
+        {/* Left Spacer - optional for visual split */}
+        <div className="hidden md:block md:w-1/2"></div>
+
+        {/* Right Side - Text / Quick Actions */}
+        <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-8 md:p-16">
           {!user ? (
-            <>
-              <a href="/login" className="hover:text-gray-300 transition">Login</a>
-              <a href="/signup" className="hover:text-gray-300 transition">Register</a>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleLogout}
-                className="hover:text-gray-300 transition"
+            <div className="text-center space-y-6">
+
+              <h1 className="text-4xl md:text-5xl font-bold text-white">
+                Welcome to Smart Attendance System
+              </h1>
+              <p className="text-lg md:text-xl text-gray-400">
+                AI-powered Face Recognition for seamless attendance tracking
+              </p>
+              <Link
+                href="/login"
+                className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
               >
-                Logout
-              </button>
-              <span className="text-sm font-medium bg-gray-700 px-3 py-1 rounded-lg shadow-md">
-                Hey, {user.username}
-              </span>
-            </>
+                Get Started
+              </Link>
+            </div>
+          ) : (
+            <div className="w-full space-y-8">
+              <h2 className="text-3xl font-bold text-white text-center mb-4">
+                Quick Actions
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {[
+                  { href: "/employee/add", text: "Employees" },
+                  { href: "/recognizer", text: "Recognizer" },
+                  { href: "/attendance", text: "Attendance Sheet" },
+                  { href: "/statistics", text: "Statistics" },
+                ].map((item, i) => (
+                  <Link
+                    key={i}
+                    href={item.href}
+                    className="block text-center bg-white border rounded-xl shadow-md hover:shadow-xl p-4 font-medium text-gray-700 hover:text-indigo-600 transition"
+                  >
+                    {item.text}
+                  </Link>
+                ))}
+              </div>
+
+              {/* <div className="text-center">
+                <button
+                  onClick={logout}
+                  className="mt-6 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+                >
+                  Logout
+                </button>
+              </div> */}
+            </div>
           )}
         </div>
-      </nav>
-
-      {/* Actions Section */}
-      <div className="container mx-auto px-6 py-20">
-        <h2 className="text-2xl font-bold text-gray-800 mb-10 text-center drop-shadow-sm">
-          Quick Actions
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          <a href="/employee/add" className="btn-card">
-            <i className="fa fa-user-plus text-xl mr-2"></i> Add New Employee
-          </a>
-          <a href="/recognizer" className="btn-card">
-            <i className="fa fa-camera text-xl mr-2"></i> Recognizer
-          </a>
-          <a href="/attendance" className="btn-card">
-            <i className="fa fa-file-invoice text-xl mr-2"></i> Attendance Sheet
-          </a>
-          <a href="/statistics" className="btn-card">
-            <i className="fa fa-chart-line text-xl mr-2"></i> Statistics
-          </a>
-          <a href="/helpBot" className="btn-card">
-            <i className="fa fa-info-circle text-xl mr-2"></i> Help
-          </a>
-        </div>
       </div>
+      <Chatbot />
     </div>
   );
 }

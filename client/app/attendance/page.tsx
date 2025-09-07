@@ -6,97 +6,107 @@ import * as faceapi from "face-api.js";
 export default function AttendancePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [detections, setDetections] = useState<string>("");
+  const [status, setStatus] = useState("Initializing...");
+  const [modelsLoaded, setModelsLoaded] = useState(false);
 
   // Load face-api.js models
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = "/models"; // public/models folder in Next.js
-      await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-      ]);
+      setStatus("Loading face recognition models...");
+      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+      await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+      await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+      await faceapi.nets.faceExpressionNet.loadFromUri("/models");
+      setModelsLoaded(true);
+      setStatus("Models loaded. Starting camera...");
       startVideo();
     };
     loadModels();
   }, []);
 
-  // Start webcam stream
+  // Start webcam
   const startVideo = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
+        if (videoRef.current) videoRef.current.srcObject = stream;
       })
-      .catch((err) => console.error("Camera not available:", err));
+      .catch(() => setStatus("Error accessing webcam"));
   };
 
-  // Detect faces from video
+  // Detect face continuously
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (!modelsLoaded) return;
 
-    videoRef.current.addEventListener("play", () => {
-      const canvas = canvasRef.current;
-      if (!canvas || !videoRef.current) return;
-
-      const displaySize = {
-        width: videoRef.current.videoWidth,
-        height: videoRef.current.videoHeight,
-      };
-
-      faceapi.matchDimensions(canvas, displaySize);
-
-      setInterval(async () => {
+    const interval = setInterval(async () => {
+      if (videoRef.current && canvasRef.current) {
         const detections = await faceapi
-          .detectAllFaces(videoRef.current!, new faceapi.TinyFaceDetectorOptions())
+          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
           .withFaceLandmarks()
           .withFaceExpressions();
 
-        const resized = faceapi.resizeResults(detections, displaySize);
+        const displaySize = {
+          width: videoRef.current.width,
+          height: videoRef.current.height,
+        };
 
-        canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resized);
-        faceapi.draw.drawFaceLandmarks(canvas, resized);
-        faceapi.draw.drawFaceExpressions(canvas, resized);
+        faceapi.matchDimensions(canvasRef.current, displaySize);
+
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        canvasRef.current
+          .getContext("2d")
+          ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+        faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+        faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+        faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
 
         if (detections.length > 0) {
-          setDetections("✅ Face detected. Attendance Marked.");
-          // 👉 Here you can call your backend API
-          // fetch("http://localhost:5000/api/attendance", { method: "POST", body: JSON.stringify({ employeeId }) })
+          setStatus("Face detected ✅");
+          // 🚀 Call your backend to mark attendance
+          // fetch("http://localhost:5000/api/attendance/mark", {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+          //   },
+          //   body: JSON.stringify({ employeeId: "EMP123" }),
+          // });
         } else {
-          setDetections("❌ No face detected.");
+          setStatus("No face detected ❌");
         }
-      }, 1000);
-    });
-  }, []);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [modelsLoaded]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-2xl font-bold mb-6">Employee Attendance</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 drop-shadow-md">
+        Attendance via Face Recognition
+      </h2>
 
-      <div className="relative">
+      <div className="relative shadow-xl rounded-xl overflow-hidden">
         <video
           ref={videoRef}
           autoPlay
           muted
-          className="rounded-xl shadow-lg border"
           width="640"
           height="480"
+          className="rounded-xl"
         />
         <canvas
           ref={canvasRef}
-          className="absolute top-0 left-0"
           width="640"
           height="480"
+          className="absolute top-0 left-0"
         />
       </div>
 
-      <p className="mt-6 text-lg font-semibold">{detections}</p>
+      <div className="mt-6 px-6 py-3 bg-white shadow-md rounded-xl text-center">
+        <p className="text-gray-700 font-medium">{status}</p>
+      </div>
     </div>
   );
 }

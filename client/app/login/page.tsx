@@ -1,6 +1,6 @@
 // app/login/page.tsx
 'use client';
-
+import Navbar from "@/components/Navbar";
 import { useState } from "react";
 
 export default function LoginPage() {
@@ -25,6 +25,7 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Authorization: `Bearer ${token}`, 
         body: JSON.stringify({
           username: formData.username,
           password: formData.password,
@@ -35,9 +36,10 @@ export default function LoginPage() {
       if (res.ok) {
         setSuccess("Login successful !");
         setError("");
+        // console.log("token", data)
 
         // Save token (optional)
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data?.token);
 
         // Redirect (example)
         setTimeout(() => {
@@ -52,16 +54,18 @@ export default function LoginPage() {
   };
 
   return (
+    
     <section
       className="min-h-screen flex items-center justify-center bg-cover"
       style={{ backgroundImage: "url('/static/bg.jpg')" }}
     >
+       {/* <Navbar /> */}
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left Image */}
           <div className="hidden md:block md:w-1/2">
             <img
-              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
+              src="/static/login.jpg"
               alt="Login"
               className="h-full w-full object-cover rounded-l-2xl"
             />

@@ -1,6 +1,7 @@
 // app/signup/page.tsx
 'use client';
 
+import Navbar from "@/components/Navbar";
 import { useState } from "react";
 
 export default function SignupPage() {
@@ -56,6 +57,7 @@ export default function SignupPage() {
 
   return (
     <section className="min-h-screen bg-gray-100 flex items-center justify-center bg-cover" style={{ backgroundImage: "url('/static/bg.jpg')" }}>
+       {/* <Navbar /> */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-4xl">
         <div className="flex flex-col lg:flex-row">
           {/* Form */}

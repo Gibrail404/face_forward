@@ -7,10 +7,10 @@ const faceUtil = require('../utils/faceRecognition');
 // Add new employee
 exports.addEmployee = async (req, res) => {
     try {
-        const { id, name, department, email } = req.body;
+        const { emp_id, name, department, email } = req.body;
         let photo = req.file; // uploaded file from multer
 
-        const existing = await Employee.findById(id);
+        const existing = await Employee.findOne({ emp_id });
         if (existing) return res.status(400).json({ message: "Employee ID already exists" });
 
         // Save photo
@@ -18,13 +18,14 @@ exports.addEmployee = async (req, res) => {
         fs.writeFileSync(photoPath, photo.buffer);
 
         // Get face encoding
-        const encoding = await faceUtil.encodeImage(photoPath);
+       const encoding = await faceUtil.encodeImage(photoPath);
 
-        const employee = new Employee({ _id: id, name, department, email, faceEncoding: encoding });
+       const employee = new Employee({ emp_id, name, department, email, faceEncoding: encoding });
+        // const employee = new Employee({ emp_id, name, department, email,});
         await employee.save();
 
-        const msg = `Hi ${name},\nWelcome to the organization. You have been successfully registered.`;
-        await sendMail(email, 'Employee Registered', msg);
+       const msg = `Hi ${name},\nWelcome to the organization. You have been successfully registered.`;
+       await sendMail(email, 'Employee Registered', msg);
 
         res.json({ message: "Employee added successfully" });
     } catch (err) {
