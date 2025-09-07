@@ -2,7 +2,6 @@ const Employee = require('../models/Employee');
 const fs = require('fs');
 const path = require('path');
 const sendMail = require('../utils/email');
-const faceUtil = require('../utils/faceRecognition');
 const Attendance = require('../models/Attendance');
 
 // Add new employee

@@ -56,7 +56,7 @@ export default function LoginPage() {
         // Redirect to home (use router)
         router.replace("/");
       } else {
-        toast.error(data.message || "❌ Invalid username or password", { position: "top-right" });
+        toast.error(data.message || " Invalid username or password", { position: "top-right" });
       }
     } catch (err) {
       toast.error("🚨 Server error. Please try again later.", { position: "top-right" });
@@ -65,8 +65,7 @@ export default function LoginPage() {
 
   return (
     <section
-      className="min-h-screen flex items-center justify-center bg-cover"
-      style={{ backgroundImage: "url('/static/bg.jpg')" }}
+      className="min-h-screen flex items-center bg-black justify-center bg-cover"
     >
       {/* <Navbar /> */}
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -74,7 +73,7 @@ export default function LoginPage() {
           {/* Left Image */}
           <div className="hidden md:block md:w-1/2">
             <img
-              src="/static/findingFace.gif"
+              src="/static/ai.gif"
               alt="Login"
               className="h-full w-full object-cover rounded-l-2xl"
             />
