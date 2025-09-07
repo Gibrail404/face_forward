@@ -184,14 +184,14 @@ export default function FaceDetectionWithAPI() {
             {/* Camera container */}
             {/* Home button */}
             <button
-                className="absolute top-12 right-24 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition z-10"
+                className="absolute top-12 right-24 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition z-10 cursor-pointer"
                 onClick={() => {
                     window.location.href = "/";
                 }}
             >
-                Home
+                Close
             </button>
-            <div className="relative w-full max-w-2xl">
+            <div className="relative w-full max-w-4xl">
                 {loading && (
                     <div className="absolute inset-0 flex justify-center items-center bg-gray-900 bg-opacity-70 z-20">
                         {/* Circular loader */}
@@ -201,13 +201,13 @@ export default function FaceDetectionWithAPI() {
 
                 <video
                     ref={videoRef}
-                    className="w-full h-auto rounded-lg shadow-lg"
+                    className="w-full h-auto object-contain rounded-lg shadow-lg"
                     autoPlay
                     muted
                 />
                 <canvas
                     ref={canvasRef}
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                    className="absolute top-0 left-0 h-full w-auto pointer-events-none"
                 />
             </div>
         </div>
