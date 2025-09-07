@@ -6,11 +6,11 @@ const faceUtil = require('../utils/faceRecognition');
 
 // Add new employee
 exports.addEmployee = async (req, res) => {
-  try {
+    try {
         const { emp_id, name, department, email } = req.body;
         let photo = req.file; // uploaded file from multer
 
-    const existing = await Employee.findOne({ emp_id });
+        const existing = await Employee.findOne({ emp_id });
         if (existing) return res.status(400).json({ message: "Employee ID already exists" });
 
         // Save photo
@@ -18,20 +18,20 @@ exports.addEmployee = async (req, res) => {
         fs.writeFileSync(photoPath, photo.buffer);
 
         // Get face encoding
-       const encoding = await faceUtil.encodeImage(photoPath);
+        const encoding = await faceUtil.encodeImage(photoPath);
 
-       const employee = new Employee({ emp_id, name, department, email, faceEncoding: encoding });
+        const employee = new Employee({ emp_id, name, department, email, faceEncoding: encoding });
         // const employee = new Employee({ emp_id, name, department, email,});
-    await employee.save();
+        await employee.save();
 
-    const msg = `Hi ${name},\nWelcome to the organization. You have been successfully registered.`;
-       await sendMail(email, 'Employee Registered', msg);
+        const msg = `Hi ${name},\nWelcome to the organization. You have been successfully registered.`;
+        await sendMail(email, 'Employee Registered', msg);
 
-    res.json({ message: "Employee added successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
+        res.json({ message: "Employee added successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+    }
 };
 
 // Update employee
@@ -46,12 +46,6 @@ exports.updateEmployee = async (req, res) => {
         employee.department = department;
         employee.email = email;
 
-        if (req.file) {
-            const photoPath = path.join(__dirname, '../uploads/', id + '.jpg');
-            fs.writeFileSync(photoPath, req.file.buffer);
-            employee.faceEncoding = await faceUtil.encodeImage(photoPath);
-        }
-
         await employee.save();
         res.json({ message: "Employee updated successfully" });
     } catch (err) {
@@ -59,6 +53,52 @@ exports.updateEmployee = async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 };
+
+
+// get employee
+exports.getEmployee = async (req, res) => {
+  try {
+    const { faceEncoding } = req.body; // embedding array from client
+    if (!faceEncoding || !faceEncoding.length) {
+      return res.status(400).json({ message: "Face encoding required" });
+    }
+
+    // Run MongoDB Atlas vector search
+    const result = await Employee.aggregate([
+      {
+        $vectorSearch: {
+          queryVector: faceEncoding,  // the input embedding
+          path: "faceEncoding",       // field in schema
+          numCandidates: 50,          // how many to compare internally
+          limit: 1,                   // top 1 match
+          index: "faceEncoding_index" // index name you created in Atlas
+        }
+      }
+    ]);
+
+    if (!result.length) {
+      return res.status(404).json({ message: "Employee not recognized" });
+    }
+
+    const bestMatch = result[0];
+
+    res.status(200).json({
+      message: "Employee recognized",
+      employee: {
+        id: bestMatch._id,
+        emp_id: bestMatch.emp_id,
+        name: bestMatch.name,
+        department: bestMatch.department,
+        email: bestMatch.email
+      },
+      similarityScore: bestMatch.score // lower = closer for euclidean
+    });
+  } catch (err) {
+    console.error("Error in getEmployee:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 
 // Delete employee
 exports.deleteEmployee = async (req, res) => {
