@@ -29,7 +29,7 @@ const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: 
   const [status, setStatus] = useState("Click take photo to capture photo");
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const departments = ["", "tech", "hr", "finance", "sales", "marketing"];
+  const departments = ["", "Finance", "HR", "Technology", "Admin"];
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -316,9 +316,9 @@ const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: 
           onChange={handleChange}
           value={formData.name}
         />
-        <select name="department" onChange={handleChange} value={formData.department} className="...">
+        <select name="department" onChange={handleChange} value={formData.department} className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
           {departments.map((d) => (
-            <option key={d} value={d}>
+            <option key={d} value={d} className="">
               {d === "" ? "Select Department" : d.charAt(0).toUpperCase() + d.slice(1)}
             </option>
           ))}
