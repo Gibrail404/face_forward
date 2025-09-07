@@ -108,7 +108,7 @@ export default function Chatbot() {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition"
+        className="bg-white text-white p-3 rounded-full shadow-lg hover:bg-slate-300 transition"
       >
            <img
                         src="/static/logo.png"
@@ -121,7 +121,7 @@ export default function Chatbot() {
       {isOpen && (
         <div className="w-80 h-96 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden mt-3">
           {/* Header */}
-          <div className="bg-indigo-600 text-white px-4 py-2 flex justify-between items-center">
+          <div className="bg-blue-950 text-white px-4 py-2 flex justify-between items-center">
             <span className="font-semibold">AGL ChatBot</span>
             <button onClick={() => setIsOpen(false)}>✖</button>
           </div>
@@ -136,7 +136,7 @@ export default function Chatbot() {
                 <div
                   className={`px-3 py-2 rounded-lg max-w-[75%] ${
                     msg.sender === "user"
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-blue-950 text-white"
                       : "bg-gray-200 text-gray-800"
                   }`}
                 >
@@ -155,7 +155,7 @@ export default function Chatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type or pick a question..."
-              className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300"
+              className="flex-1 px-3 py-2 text-sm border rounded-lg text-black focus:outline-none focus:ring focus:ring-indigo-300 placeholder:text-black"
             />
             <datalist id="chat-options">
               {availableQuestions.map((q, idx) => (
@@ -164,7 +164,7 @@ export default function Chatbot() {
             </datalist>
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 transition"
+              className="bg-blue-950 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Send
             </button>

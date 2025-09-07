@@ -3,6 +3,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import * as faceapi from "face-api.js";
+import FaceMoodBox from "./face";
+import api from "@/utils/api";
 
 const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdateUser: any }) => {
   const [formData, setFormData] = useState({
@@ -309,28 +311,37 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         }
 
         setStatus("Encoding face...");
-        const { descriptor } = await encodeFaceFromPhoto(photo);
+        const raw = localStorage.getItem('myapp_face_descriptor_v1')!;
+        console.log("myapp_face_descriptor_v1 : ",raw);
+        const descriptor = JSON.parse(raw);
 
-        res = await fetch("http://localhost:5000/api/employees/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            emp_id: formData.emp_id,
-            name: formData.name,
-            department: formData.department,
-            email: formData.email,
-            faceEncoding: descriptor,
-          }),
-        });
+        const payload = {
+          emp_id: formData.emp_id,
+          name: formData.name,
+          department: formData.department,
+          email: formData.email,
+          faceEncoding: descriptor,
+        };
 
-        data = await res.json();
-        if (!res.ok) {
-          alert(data.message || "Error saving employee");
+        const add_response = await api.post("api/employees/add",payload);
+
+        const is_success = add_response.data;
+        if (add_response.status != 200) {
+          alert(is_success.message || "Error saving employee");
           return;
         }
 
         setStatus("✅ Employee added successfully");
       }
+      setFormData({
+        emp_id: "",
+        name: "",
+        department: "",
+        email: "",
+      })
+      localStorage.removeItem('myapp_face_descriptor_v1');
+      localStorage.removeItem('myapp_face_thumbnail_v1');
+      setPhoto(null);
     } catch (err) {
       console.error(err);
       alert("Error saving/updating employee");
@@ -339,27 +350,27 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
 
 
   return (
-    <div className="p-6">
+    <div className="p-6 rounded-xl mt-22">
       <h2 className="text-xl font-bold mb-4 text-center">{`${Object.keys(updateUser).length !== 0 ? "Update Employee Data" : "Add New Employee"}`}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           name="emp_id"
           placeholder="Employee ID (e.g. AGL0000)"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.emp_id}
         />
         <input
           name="name"
           placeholder="Full Name"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.name}
         />
         <input
           name="department"
           placeholder="Department"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.department}
         />
@@ -367,7 +378,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           name="email"
           placeholder="Email"
           type="email"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.email}
         />
@@ -382,7 +393,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
             <button
               type="button"
               onClick={startCamera}
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              className="bg-blue-950 text-white px-4 py-2 rounded-lg w-full shadow-blue-700 shadow-2xs "
             >
               Take Photo
             </button>
@@ -393,7 +404,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-green-500 text-white px-4 py-2 cursor-pointer rounded"
+            className="bg-green-500 text-white px-4 py-2 cursor-pointer"
           >
             Submit
           </button>
@@ -416,6 +427,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
             onClick={() => {
               setPhoto(null);
               setShowGif(false);
+              setShowCamera(true);
             }}
           >
             ReTake
@@ -428,19 +440,27 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg w-1/2 relative">
             <h3 className="text-center text-lg font-bold">Camera</h3>
-            {countdown !== null && (
-              <div className="absolute top-1/2 left-1/2 text-6xl font-bold text-green-500">
-                {countdown}
-              </div>
-            )}
-            <video ref={videoRef} autoPlay muted width="640" height="480" className="rounded-lg" />
-            <canvas ref={canvasRef} width="640" height="480" className="absolute top-0 left-0" />
-            <button
-              onClick={stopCamera}
+
+            {/* 🔹 Reuse FaceMoodBox */}
+            <FaceMoodBox
+              onEnroll={(data) => {
+                // save captured thumbnail
+                setPhoto(data.thumbnail);
+                // store encoding for submit
+                (formData as any).faceEncoding = data.descriptor;
+
+                setStatus("Photo & descriptor captured 🎉");
+                setShowCamera(false); // 🔹 close popup automatically
+                stopCamera()
+              }}
+            />
+
+            {/* <button
+              onClick={() => setShowCamera(false)}
               className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
             >
               Close
-            </button>
+            </button> */}
           </div>
         </div>
       )}
@@ -450,6 +470,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         <p className="text-gray-700 font-medium">{status}</p>
       </div>
     </div>
+
   );
 };
 
