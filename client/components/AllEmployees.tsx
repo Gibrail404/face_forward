@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/utils/api";
 import { useState, useEffect } from "react";
 
 interface Employee {
@@ -11,7 +12,7 @@ interface Employee {
   hiringDate: string;
 }
 
-export default function AllEmployees() {
+export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: any, setUpdateUser: any}) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [limit, setLimit] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
@@ -19,19 +20,12 @@ export default function AllEmployees() {
   // 🔹 Fetch employees
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/employees/list", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const {data} = await api.get('/api/employees/list');
 
-      if (!res.ok) throw new Error("Failed to fetch employees");
-
-      const json = await res.json();
-
-      if (Array.isArray(json)) {
-        setEmployees(json);
-      } else if (Array.isArray(json.data)) {
-        setEmployees(json.data);
+      if (Array.isArray(data)) {
+        setEmployees(data);
+      } else if (Array.isArray(data?.data)) {
+        setEmployees(data?.data);
       } else {
         setEmployees([]);
       }
@@ -128,7 +122,7 @@ export default function AllEmployees() {
                         : "-"}
                     </td>
                     <td className="border px-4 py-2 space-x-2">
-                      <button className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                      <button onClick={() => setUpdateUser(emp)} className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
                         Update
                       </button>
                       <button
