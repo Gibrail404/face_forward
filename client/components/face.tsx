@@ -8,50 +8,97 @@ import {
   detectFaces,
 } from "./faceService";
 
-export default function FaceMoodBox() {
+export default function FaceMoodBox({
+  onEnroll,
+}: {
+  onEnroll: (data: { descriptor: number[]; thumbnail: string }) => void;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [mood, setMood] = useState<string>("");
 
   useEffect(() => {
+    let mounted = true;
+    let loopId: number | null = null;
+    let runningDetect = false;
+
     (async () => {
-      await loadFaceModels();
-      setModelsLoaded(true);
-      if (videoRef.current) await startCamera(videoRef.current);
+      try {
+        await loadFaceModels();
+        if (!mounted) return;
+        setModelsLoaded(true);
 
-      // start loop
-      const loop = setInterval(async () => {
-        if (!videoRef.current) return;
-        const detections = await detectFaces(videoRef.current);
-        if (detections.length > 0) {
-          // find mood with highest probability
-          const expressions = detections[0].expressions;
-          const best = Object.entries(expressions).reduce((a, b) =>
-            a[1] > b[1] ? a : b
-          );
-          setMood(best[0]); // e.g. "happy", "neutral", "angry"
+        if (videoRef.current && !videoRef.current.srcObject) {
+          try {
+            await startCamera(videoRef.current);
+          } catch (err) {
+            console.error("startCamera error:", err);
+            return;
+          }
         }
-      }, 200);
 
-      return () => {
-        clearInterval(loop);
-        if (videoRef.current) stopCamera(videoRef.current);
-      };
+        loopId = window.setInterval(async () => {
+          if (!mounted) return;
+          const video = videoRef.current;
+          if (!video || runningDetect) return;
+
+          runningDetect = true;
+          try {
+            const detections = await detectFaces(video);
+            if (detections && detections.length > 0) {
+              // You can use mood logic here if needed
+            }
+          } catch (err) {
+            console.error("Detection error:", err);
+          } finally {
+            runningDetect = false;
+          }
+        }, 200);
+      } catch (err) {
+        console.error("FaceMoodBox init error:", err);
+      }
     })();
+
+    return () => {
+      mounted = false;
+      if (loopId) clearInterval(loopId);
+      if (videoRef.current) {
+        try {
+          stopCamera(videoRef.current);
+        } catch (e) {
+          console.warn("stopCamera error:", e);
+        }
+      }
+    };
   }, []);
 
   const handleEnroll = async () => {
     if (!videoRef.current) return;
-    const data = await enrollFace(videoRef.current);
-    console.log("Descriptor:", data.descriptor);
-    console.log("Thumbnail:", data.thumbnail);
+    try {
+      const data = await enrollFace(videoRef.current);
+
+      // 🔹 stop camera here
+      stopCamera(videoRef.current);
+
+      // 🔹 return data to parent
+      onEnroll(data);
+    } catch (err) {
+      console.error("Enrollment failed:", err);
+    }
   };
 
   return (
     <div className="flex flex-col items-center">
-      <video ref={videoRef} autoPlay muted playsInline className="w-64 h-64 border" />
-      <p className="mt-2">Mood: {mood || "Detecting..."}</p>
-      <button onClick={handleEnroll} className="mt-3 px-4 py-2 bg-green-500">
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="w-full max-w-[800px] aspect-video border rounded-lg shadow-lg"
+      />
+      <button
+        onClick={handleEnroll}
+        className="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg"
+      >
         Confirm (Enroll)
       </button>
     </div>

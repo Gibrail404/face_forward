@@ -3,6 +3,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import * as faceapi from "face-api.js";
+import FaceMoodBox from "./face";
+import api from "@/utils/api";
 
 const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdateUser: any }) => {
   const [formData, setFormData] = useState({
@@ -309,28 +311,37 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         }
 
         setStatus("Encoding face...");
-        const { descriptor } = await encodeFaceFromPhoto(photo);
+        const raw = localStorage.getItem('myapp_face_descriptor_v1')!;
+        console.log("myapp_face_descriptor_v1 : ",raw);
+        const descriptor = JSON.parse(raw);
 
-        res = await fetch("http://localhost:5000/api/employees/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            emp_id: formData.emp_id,
-            name: formData.name,
-            department: formData.department,
-            email: formData.email,
-            faceEncoding: descriptor,
-          }),
-        });
+        const payload = {
+          emp_id: formData.emp_id,
+          name: formData.name,
+          department: formData.department,
+          email: formData.email,
+          faceEncoding: descriptor,
+        };
 
-        data = await res.json();
-        if (!res.ok) {
-          alert(data.message || "Error saving employee");
+        const add_response = await api.post("api/employees/add",payload);
+
+        const is_success = add_response.data;
+        if (add_response.status != 200) {
+          alert(is_success.message || "Error saving employee");
           return;
         }
 
         setStatus("✅ Employee added successfully");
       }
+      setFormData({
+        emp_id: "",
+        name: "",
+        department: "",
+        email: "",
+      })
+      localStorage.removeItem('myapp_face_descriptor_v1');
+      localStorage.removeItem('myapp_face_thumbnail_v1');
+      setPhoto(null);
     } catch (err) {
       console.error(err);
       alert("Error saving/updating employee");
@@ -416,6 +427,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
             onClick={() => {
               setPhoto(null);
               setShowGif(false);
+              setShowCamera(true);
             }}
           >
             ReTake
@@ -428,19 +440,27 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg w-1/2 relative">
             <h3 className="text-center text-lg font-bold">Camera</h3>
-            {countdown !== null && (
-              <div className="absolute top-1/2 left-1/2 text-6xl font-bold text-green-500">
-                {countdown}
-              </div>
-            )}
-            <video ref={videoRef} autoPlay muted width="640" height="480" className="rounded-lg" />
-            <canvas ref={canvasRef} width="640" height="480" className="absolute top-0 left-0" />
-            <button
-              onClick={stopCamera}
+
+            {/* 🔹 Reuse FaceMoodBox */}
+            <FaceMoodBox
+              onEnroll={(data) => {
+                // save captured thumbnail
+                setPhoto(data.thumbnail);
+                // store encoding for submit
+                (formData as any).faceEncoding = data.descriptor;
+
+                setStatus("Photo & descriptor captured 🎉");
+                setShowCamera(false); // 🔹 close popup automatically
+                stopCamera()
+              }}
+            />
+
+            {/* <button
+              onClick={() => setShowCamera(false)}
               className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
             >
               Close
-            </button>
+            </button> */}
           </div>
         </div>
       )}

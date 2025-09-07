@@ -17,9 +17,9 @@ export default function Employee() {
         <div className="w-full max-w-3xl">
           <AddEmployee updateUser={updateUser} setUpdateUser={setUpdateUser} />
         </div>
-         <div className="w-full max-w-3xl">
+         {/* <div className="w-full max-w-3xl">
           <FaceWidget />
-        </div>
+        </div> */}
         
 
         {/* All Employees Table */}
