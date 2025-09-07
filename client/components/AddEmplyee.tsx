@@ -339,27 +339,27 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
 
 
   return (
-    <div className="p-6">
+    <div className="p-6 rounded-xl mt-22">
       <h2 className="text-xl font-bold mb-4 text-center">{`${Object.keys(updateUser).length !== 0 ? "Update Employee Data" : "Add New Employee"}`}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           name="emp_id"
           placeholder="Employee ID (e.g. AGL0000)"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.emp_id}
         />
         <input
           name="name"
           placeholder="Full Name"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.name}
         />
         <input
           name="department"
           placeholder="Department"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.department}
         />
@@ -367,7 +367,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           name="email"
           placeholder="Email"
           type="email"
-          className="border p-2 w-full"
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           onChange={handleChange}
           value={formData.email}
         />
@@ -382,7 +382,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
             <button
               type="button"
               onClick={startCamera}
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              className="bg-blue-950 text-white px-4 py-2 rounded-lg w-full shadow-blue-700 shadow-2xs "
             >
               Take Photo
             </button>
@@ -393,7 +393,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-green-500 text-white px-4 py-2 cursor-pointer rounded"
+            className="bg-green-500 text-white px-4 py-2 cursor-pointer"
           >
             Submit
           </button>
@@ -450,6 +450,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         <p className="text-gray-700 font-medium">{status}</p>
       </div>
     </div>
+
   );
 };
 
