@@ -108,7 +108,7 @@ export default function Chatbot() {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white text-white p-3 rounded-full shadow-lg hover:bg-slate-300 transition"
+        className="bg-white text-white shadow-blue-600 p-3 rounded-full shadow-lg hover:bg-slate-300 transition"
       >
            <img
                         src="/static/logo.png"

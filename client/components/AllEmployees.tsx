@@ -145,7 +145,7 @@ export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: a
                 key={i + 1}
                 className={`px-3 py-1 rounded ${
                   page === i + 1
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-blue-900 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
                 onClick={() => setPage(i + 1)}

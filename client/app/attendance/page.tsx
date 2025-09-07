@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import api from "@/utils/api";
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
+import Chatbot from "../help/page";
 
 interface AttendanceRecord {
   _id: string;
@@ -88,9 +89,9 @@ export default function Attendance() {
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
       filteredRecords.map((r) => ({
-        ID: r._id,
-        Name: r.emp_id?.name,
-        Department: r.emp_id?.department,
+        ID: r.emp_id,
+        Name: r?.name,
+        Department: r?.department,
         PunchIn: r.time?.punch_in || "-",
         PunchOut: r.time?.punch_out || "-",
         Date: r.date.split("T")[0],
@@ -166,7 +167,7 @@ export default function Attendance() {
             </tr>
           </thead>
           <tbody>
-            {records.slice(0, pageSize).map((r) => (
+            {filteredRecords.slice(0, pageSize).map((r) => (
               <tr key={r._id} className="hover:bg-gray-50">
                 <td className="border p-2">{r.emp_id}</td>
                 <td className="border p-2">{r.name}</td>
@@ -198,6 +199,7 @@ export default function Attendance() {
         </table>
       </div>
     </div>
+     <Chatbot />
     </>
   );
 }
