@@ -1,15 +1,16 @@
 "use client";
 
+import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import api from "@/utils/api";
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
 interface AttendanceRecord {
   _id: string;
-  emp_id: {
-    name: string;
-    department: string;
-  };
+  emp_id: string;
+  name: string;
+  department: string;
   time: {
     punch_in: string | null;
     punch_out: string | null;
@@ -34,18 +35,40 @@ export default function Attendance() {
 
   // Fetch attendance data from API
   useEffect(() => {
-    if (!isAuthed) return;
-    const fetchRecords = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/attendance/sheet");
-        const data = await res.json();
-        setRecords(data);
-      } catch (err) {
+  if (!isAuthed) return;
+
+  const controller = new AbortController();
+  const fetchRecords = async () => {
+    try {
+      const res = await api.get('api/attendance/sheet');
+
+      const sheet_response = res.data;
+      if (res.status != 200) {
+        console.error("Failed to fetch records, status:", res.status);
+        // optional: setRecords([]) or handle 401 by removing token
+        if (res.status === 401) {
+          localStorage.removeItem("token");
+          // you may want to redirect to login here
+        }
+        return;
+      }
+
+      setRecords(Array.isArray(sheet_response) ? sheet_response : []);
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        // fetch aborted on unmount/dep change — ignore
+      } else {
         console.error("Failed to fetch records", err);
       }
-    };
-    fetchRecords();
-  }, []);
+    }
+  };
+
+  fetchRecords();
+
+  return () => {
+    controller.abort();
+  };
+}, [isAuthed]);
 
   // Filter by selected date
   useEffect(() => {
@@ -80,7 +103,9 @@ export default function Attendance() {
   };
 
   return (
-    <div className="p-6">
+    <>
+    <Navbar />
+    <div className="p-6 mt-[63px]">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Attendance Records</h2>
@@ -141,11 +166,11 @@ export default function Attendance() {
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.slice(0, pageSize).map((r) => (
+            {records.slice(0, pageSize).map((r) => (
               <tr key={r._id} className="hover:bg-gray-50">
-                <td className="border p-2">{r._id}</td>
-                <td className="border p-2">{r.emp_id?.name}</td>
-                <td className="border p-2">{r.emp_id?.department}</td>
+                <td className="border p-2">{r.emp_id}</td>
+                <td className="border p-2">{r.name}</td>
+                <td className="border p-2">{r.department}</td>
                 <td className="border p-2">{r.time?.punch_in || "-"}</td>
                 <td className="border p-2">{r.time?.punch_out || "-"}</td>
                 <td className="border p-2">{r.date.split("T")[0]}</td>
@@ -162,7 +187,7 @@ export default function Attendance() {
                 </td>
               </tr>
             ))}
-            {!filteredRecords.length && (
+            {!records.length && (
               <tr>
                 <td colSpan={7} className="text-center p-4 text-gray-500">
                   No records found for {selectedDate}
@@ -173,5 +198,6 @@ export default function Attendance() {
         </table>
       </div>
     </div>
+    </>
   );
 }
