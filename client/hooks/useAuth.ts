@@ -37,27 +37,27 @@ export const useAuth = ({ redirectTo = "/login", verifyWithServer  = true } = {}
         // we have a token locally — optimistically accept it
         if (mounted) setIsAuthed(true);
 
-        if (verifyWithServer) {
-          // optional: verify token with backend (do not redirect until server responds)
-          try {
-            const res = await fetch("/api/auth/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-              body: JSON.stringify({}),
-            });
-            if (!res.ok) {
-              // invalid token -> clear and redirect
-              if (mounted) {
-                localStorage.removeItem("token");
-                setIsAuthed(false);
-                router.replace(redirectTo);
-              }
-            }
-          } catch (err) {
-            console.warn("token verify failed:", err);
-            // optionally treat as invalid; here we'll keep user logged in (to avoid bouncing)
-          }
-        }
+        // if (verifyWithServer) {
+        //   // optional: verify token with backend (do not redirect until server responds)
+        //   try {
+        //     const res = await fetch("/api/auth/verify", {
+        //       method: "POST",
+        //       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        //       body: JSON.stringify({}),
+        //     });
+        //     if (!res.ok) {
+        //       // invalid token -> clear and redirect
+        //       if (mounted) {
+        //         localStorage.removeItem("token");
+        //         setIsAuthed(false);
+        //         router.replace(redirectTo);
+        //       }
+        //     }
+        //   } catch (err) {
+        //     console.warn("token verify failed:", err);
+        //     // optionally treat as invalid; here we'll keep user logged in (to avoid bouncing)
+        //   }
+        // }
       } catch (err) {
         console.error("useAuth error:", err);
       } finally {
