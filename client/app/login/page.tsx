@@ -66,7 +66,7 @@ export default function LoginPage() {
           {/* Left Image */}
           <div className="hidden md:block md:w-1/2">
             <img
-              src="/static/login.jpg"
+              src="/static/findingFace.gif"
               alt="Login"
               className="h-full w-full object-cover rounded-l-2xl"
             />

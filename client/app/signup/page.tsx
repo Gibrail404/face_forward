@@ -162,7 +162,7 @@ export default function SignupPage() {
           {/* Image */}
           <div className="hidden lg:block lg:w-1/2">
             <img
-              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
+              src="static/login.jpg"
               alt="Sample"
               className="object-cover h-full w-full"
             />
