@@ -24,7 +24,7 @@ exports.startRecognition = async (req, res) => {
     const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors);
 
     // Descriptor received from client (instead of uploaded image)
-    const { descriptor } = req.body; // <-- send Float32Array[] from frontend
+    const { descriptor } = req.body; 
 
     if (!descriptor || !descriptor.length) {
       return res.status(400).json({ message: "No descriptor received" });

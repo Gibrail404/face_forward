@@ -193,7 +193,11 @@ export default function SignupPage() {
           {/* Image */}
           <div className="hidden lg:block max-w-[50%] ">
             <img
+<<<<<<< HEAD
+              src="static/login.jpg"
+=======
               src="/static/side-image.jpg"
+>>>>>>> 3ab2586b2309d8d36a912a271c8d6d00583acffb
               alt="Sample"
               className="object-cover h-full w-full bg-blend-hard-light"
             />

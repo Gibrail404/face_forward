@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const sendMail = require('../utils/email');
 const faceUtil = require('../utils/faceRecognition');
+const Attendance = require('../models/Attendance');
 
 // Add new employee
 exports.addEmployee = async (req, res) => {
@@ -84,7 +85,48 @@ exports.getEmployee = async (req, res) => {
       const distance = bestMatch.score; // similarity/distance value
 
       if (distance > 0.96) {
-        console.log("Matched user:", bestMatch.name);
+        console.log("Matched user:", bestMatch);
+        const empId = bestMatch._id;
+        const emp = await Employee.findById(empId);
+
+        const today = new Date();
+        const dateOnly = new Date(today.toDateString()); // strip time
+        let attendance = await Attendance.findOne({ emp_id: bestMatch.emp_id, date: dateOnly });
+        const currentTime = new Date().toTimeString().split(" ")[0]; // HH:MM:SS
+
+        if (!attendance) {
+          // First recognition -> punch_in
+          attendance = await Attendance.create({
+            emp_id: bestMatch.emp_id,
+            date: dateOnly,
+            time: { punch_in: currentTime, punch_out: null },
+            status: "Pending",
+          });
+
+          await sendMail(emp.email, "Punch In Successful", `Hello ${emp.name}, you punched in at ${currentTime}`);
+        } else if (!attendance.time.punch_out) {
+          // Second recognition -> punch_out
+          attendance.time.punch_out = currentTime;
+
+          // Calculate total working hours
+          const [h1, m1, s1] = attendance.time.punch_in.split(":").map(Number);
+          const [h2, m2, s2] = attendance.time.punch_out.split(":").map(Number);
+
+          const punchInDate = new Date(today.setHours(h1, m1, s1, 0));
+          const punchOutDate = new Date(new Date().setHours(h2, m2, s2, 0));
+
+          const diffMs = punchOutDate - punchInDate;
+          const diffHrs = diffMs / (1000 * 60 * 60);
+
+          attendance.status = diffHrs >= 8 ? "Present" : "Absent";
+          await attendance.save();
+
+          await sendMail(
+            emp.email,
+            "Punch Out Successful",
+            `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(2)} hrs`
+          );
+        }
       } else {
         console.log("No registered user found (too different)");
       }
