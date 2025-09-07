@@ -21,12 +21,9 @@ export default function AttendanceStats() {
   const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
   const { checking, isAuthed } = value;
 
-  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
-
-  if (!isAuthed) return null;
-
   useEffect(() => {
     // ✅ Mock Data - replace with API call
+    if (!isAuthed) return;
     const today = {
       date: new Date().toISOString().split("T")[0],
       HR: 12,
@@ -48,6 +45,10 @@ export default function AttendanceStats() {
     setTodayData(today);
     setLast7DaysData(last7);
   }, []);
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
