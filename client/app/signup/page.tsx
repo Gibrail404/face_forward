@@ -2,7 +2,10 @@
 'use client';
 
 import Navbar from "@/components/Navbar";
+import Link from "next/link";
 import { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -44,18 +47,17 @@ export default function SignupPage() {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        setSuccess("Registration successful!");
-        // Redirect (example)
-        setTimeout(() => {
-          window.location.href = "/"; // or dashboard
-        }, 1500);
-        setError("");
-      } else {
-        setError(data.message || "Registration failed");
-      }
+     if (res.ok) {
+  toast.success("🎉 Registration successful!", { position: "top-right" });
+  
+  setTimeout(() => {
+    window.location.href = "/"; // redirect after success
+  }, 2000);
+} else {
+  toast.error(data.message || "❌ Registration failed", { position: "top-right" });
+}
     } catch (err) {
-      setError("Server error");
+      toast.error("🚨 Server error. Please try again later.", { position: "top-right" });
     }
   };
 
@@ -66,10 +68,39 @@ export default function SignupPage() {
         <div className="flex flex-col lg:flex-row">
           {/* Form */}
           <div className="w-full lg:w-1/2 p-8">
-            <h2 className="text-3xl font-bold mb-6 text-center">Sign Up</h2>
+           {/* button for home */}
+            <Link href="/" passHref>
+              <button
+                className="bg-white text-center w-48 rounded-2xl h-10 relative text-black text-lg font-semibold group mb-6"
+                type="button"
 
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            {success && <p className="text-green-500 mb-4">{success}</p>}
+              >
+                <div
+                  className="bg-blue-950 rounded-xl h-8 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 1024 1024"
+                    height="25px"
+                    width="25px"
+                  >
+                    <path
+                      d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                      fill="#ffffff"
+                    ></path>
+                    <path
+                      d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                      fill="#ffffff"
+                    ></path>
+                  </svg>
+                </div>
+                <p className="translate-x-2">Go Home</p>
+              </button>
+            </Link>
+            <h2 className="text-4xl font-bold leading-0.5 text-blue-950 text-center mt-8 mb-4">Sign Up</h2>
+
+            {/* {error && <p className="text-red-500 mb-4">{error}</p>}
+            {success && <p className="text-green-500 mb-4">{success}</p>} */}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -152,7 +183,7 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-700 transition"
+                className="w-full bg-blue-950 text-white py-2  hover:bg-blue-700 transition rounded-lg shadow-blue-700 shadow-2xs"
               >
                 Register
               </button>
@@ -160,15 +191,17 @@ export default function SignupPage() {
           </div>
 
           {/* Image */}
-          <div className="hidden lg:block lg:w-1/2">
+          <div className="hidden lg:block max-w-[50%] ">
             <img
-              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
+              src="/static/side-image.jpg"
               alt="Sample"
-              className="object-cover h-full w-full"
+              className="object-cover h-full w-full bg-blend-hard-light"
             />
           </div>
         </div>
       </div>
+          {/* Toast container */}
+      <ToastContainer />
     </section>
   );
 }

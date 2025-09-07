@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
    const pathname = usePathname();
+   const isLightRoute = pathname === "/" || pathname === "/employee/add";
+
 
   return (
     <nav className="fixed w-full top-0 left-0 z-50 bg-transparent">
@@ -24,7 +26,7 @@ export default function Navbar() {
           // className=" text-white"
           className={clsx(
               "text-lg font-semibold tracking-wide",
-              pathname === "/" ? "text-white" : "text-blue-950"
+              isLightRoute ? "text-white" : "text-blue-950"
             )}
           >
             Face Forward
@@ -38,7 +40,7 @@ export default function Navbar() {
             // className="text-white hover:text-indigo-300 transition font-medium"
             className={clsx(
               "hover:text-blue-800 transition font-medium",
-              pathname === "/" ? "text-white" : "text-blue-950"
+              isLightRoute ? "text-white" : "text-blue-950"
             )}
           >
             Home
@@ -50,7 +52,7 @@ export default function Navbar() {
               // className="text-sm font-medium text-white px-3 py-1 rounded-lg"
               className={clsx(
               "hover:text-blue-800 transition font-medium",
-              pathname === "/" ? "text-white" : "text-blue-950"
+              isLightRoute ? "text-white" : "text-blue-950"
             )}
               >
                 Hey, {user.name}
@@ -67,8 +69,9 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-white hover:text-slate-300 transition font-medium bg-blue-950 px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs "
+                className="bg-blue-950 flex gap-2 items-center hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-blue-700 shadow-2xs border-none transition"
               >
+                 <FaArrowRight />
                 Login
               </Link>
             </>

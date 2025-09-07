@@ -69,7 +69,7 @@ export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: a
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-lg mt-10 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">All Employees</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center text-blue-950">All Employees</h1>
 
       {paginatedEmployees.length === 0 ? (
         <div className="flex justify-center">
@@ -78,7 +78,7 @@ export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: a
       ) : (
         <>
           <div className="flex justify-between mb-4 items-center">
-            <div>
+            <div className="flex gap-4 mb-4">
               Show{" "}
               <select
                 value={limit}
@@ -94,34 +94,34 @@ export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: a
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200">
+            <table className="min-w-full rounded-lg bg-white p-4">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border px-4 py-2">SNo</th>
-                  <th className="border px-4 py-2">ID</th>
-                  <th className="border px-4 py-2">Name</th>
-                  <th className="border px-4 py-2">Dept</th>
-                  <th className="border px-4 py-2">Email</th>
-                  <th className="border px-4 py-2">Hiring Date</th>
-                  <th className="border px-4 py-2">Action</th>
+                  <th className=" px-4 py-2  text-blue-950">SNo</th>
+                  <th className=" px-4 py-2  text-blue-950">ID</th>
+                  <th className=" px-4 py-2  text-blue-950">Name</th>
+                  <th className=" px-4 py-2  text-blue-950">Dept</th>
+                  <th className=" px-4 py-2  text-blue-950">Email</th>
+                  <th className=" px-4 py-2  text-blue-950">Hiring Date</th>
+                  <th className=" px-4 py-2  text-blue-950">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedEmployees.map((emp, index) => (
-                  <tr key={emp._id} className="text-center hover:bg-gray-50">
-                    <td className="border px-4 py-2">
+                  <tr key={emp._id} className="text-center hover:bg-gray-50 bg-white">
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">
                       {startIndex + index + 1}
                     </td>
-                    <td className="border px-4 py-2">{emp.emp_id}</td>
-                    <td className="border px-4 py-2">{emp.name}</td>
-                    <td className="border px-4 py-2">{emp.department}</td>
-                    <td className="border px-4 py-2">{emp.email}</td>
-                    <td className="border px-4 py-2">
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">{emp.emp_id}</td>
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">{emp.name}</td>
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">{emp.department}</td>
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">{emp.email}</td>
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2">
                       {emp.hiringDate
                         ? new Date(emp.hiringDate).toLocaleDateString()
                         : "-"}
                     </td>
-                    <td className="border px-4 py-2 space-x-2">
+                    <td className="border-b-slate-300 border-b-2 px-4 py-2 space-x-2">
                       <button onClick={() => setUpdateUser(emp)} className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
                         Update
                       </button>
