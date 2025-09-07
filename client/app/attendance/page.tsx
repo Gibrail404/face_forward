@@ -31,12 +31,10 @@ export default function Attendance() {
   const { value } = useAuth({ redirectTo: "/login", verifyWithServer: true });
   const { checking, isAuthed } = value;
 
-  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
-
-  if (!isAuthed) return null;
 
   // Fetch attendance data from API
   useEffect(() => {
+    if (!isAuthed) return;
     const fetchRecords = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/attendance/sheet");
@@ -58,6 +56,10 @@ export default function Attendance() {
     );
     setFilteredRecords(filtered);
   }, [records, selectedDate]);
+
+  if (checking) return <div className="min-h-screen flex items-center justify-center">Checking auth...</div>;
+
+  if (!isAuthed) return null;
 
   // Export Excel
   const exportToExcel = () => {
