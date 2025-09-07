@@ -36,10 +36,10 @@ export default function HomePage() {
             <div className="text-center space-y-6">
 
               <h1 className="text-4xl md:text-5xl font-bold text-white text leading-14">
-                Welcome to Smart Attendance System
+                Welcome to Face Forward
               </h1>
               <p className="text-lg md:text-xl text-gray-400">
-                AI-powered Face Recognition for seamless attendance tracking
+                AI-powered Face Recognition for seamless Attendance Tracking
               </p>
               <Link
                 href="/login"
