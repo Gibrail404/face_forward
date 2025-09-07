@@ -12,7 +12,7 @@ interface Employee {
   hiringDate: string;
 }
 
-export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: any, setUpdateUser: any}) {
+export default function AllEmployees({updateUser, setUpdateUser,did_update}: {updateUser: any, setUpdateUser: any,did_update:boolean}) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [limit, setLimit] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
@@ -37,7 +37,7 @@ export default function AllEmployees({updateUser, setUpdateUser}: {updateUser: a
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [did_update]);
 
   // Pagination
   const startIndex = (page - 1) * limit;

@@ -1,12 +1,13 @@
 
 
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
 import * as faceapi from "face-api.js";
 import FaceMoodBox from "./face";
 import api from "@/utils/api";
+import { toast } from "react-toastify";
 
-const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdateUser: any }) => {
+const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: any, setUpdateUser: any ,setGetListing:Dispatch<SetStateAction<boolean>>}) => {
   const [formData, setFormData] = useState({
     emp_id: "",
     name: "",
@@ -28,6 +29,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
   const [status, setStatus] = useState("Click take photo to capture photo");
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const departments = ["", "tech", "hr", "finance", "sales", "marketing"];
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -186,7 +188,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
   };
 
   // Input change
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -218,7 +220,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
   };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formData.emp_id || !formData.name || !formData.department || !formData.email) {
@@ -227,33 +229,31 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
     }
 
     try {
-      let res, data;
+      let data;
 
       // 🔹 If updateUser exists => UPDATE flow
       if (updateUser && Object.keys(updateUser).length !== 0) {
         setStatus("Updating employee...");
+        const payload = {
+          name: formData.name,
+          department: formData.department,
+          email: formData.email,
+        }
+        const res_response = await api.put(`api/employees/update/${updateUser._id}`, payload);
+        console.log("res_response : ",res_response.data);
 
-        res = await fetch(`http://localhost:5000/api/employees/update/${updateUser._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            department: formData.department,
-            email: formData.email,
-          }),
-        });
-
-        data = await res.json();
-        if (!res.ok) {
-          alert(data.message || "Error updating employee");
+        data = res_response.data;
+        if (res_response.status != 200) {
+          toast.error(data.message || "Error updating employee");
           return;
         }
 
         setStatus("✅ Employee updated successfully");
+        setGetListing(true);
       } else {
         // 🔹 Otherwise => ADD flow
         if (!photo) {
-          alert("Please capture a photo for new employee.");
+          toast.error("Please capture a photo for new employee.");
           return;
         }
 
@@ -274,11 +274,13 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
 
         const is_success = add_response.data;
         if (add_response.status != 200) {
-          alert(is_success.message || "Error saving employee");
+          toast.error(is_success.message || "Error saving employee")
           return;
         }
 
+        toast.success("✅ Employee added successfully");
         setStatus("✅ Employee added successfully");
+        setGetListing(true);
       }
       setFormData({
         emp_id: "",
@@ -291,7 +293,7 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
       setPhoto(null);
     } catch (err) {
       console.error(err);
-      alert("Error saving/updating employee");
+      toast.error("Error saving/updating employee");
     }
   };
 
@@ -314,13 +316,13 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
           onChange={handleChange}
           value={formData.name}
         />
-        <input
-          name="department"
-          placeholder="Department"
-          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          onChange={handleChange}
-          value={formData.department}
-        />
+        <select name="department" onChange={handleChange} value={formData.department} className="...">
+          {departments.map((d) => (
+            <option key={d} value={d}>
+              {d === "" ? "Select Department" : d.charAt(0).toUpperCase() + d.slice(1)}
+            </option>
+          ))}
+        </select>
         <input
           name="email"
           placeholder="Email"
@@ -350,7 +352,6 @@ const AddEmployee = ({ updateUser, setUpdateUser }: { updateUser: any, setUpdate
         <div className="flex space-x-4 justify-center">
           <button
             type="submit"
-            onClick={handleSubmit}
             className="bg-white text-black rounded-lg shadow-blue-700 shadow-2xs hover:bg-blue-700 px-4 py-2 cursor-pointer hover:text-white"
           >
             Submit

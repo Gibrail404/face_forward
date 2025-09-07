@@ -10,7 +10,7 @@ interface User {
   name?: string;
 }
 
-export const useAuth = ({ redirectTo = "/login", verifyWithServer  = true } = {}) => {
+export const useAuth = ({ redirectTo = "/", verifyWithServer  = true } = {}) => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
