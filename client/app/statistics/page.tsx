@@ -3,6 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Navbar from "@/components/Navbar";
 import Chatbot from "../help/page";
 
 // 👇 Dynamically import Plot with SSR disabled
@@ -52,9 +53,11 @@ export default function AttendanceStats() {
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+    <>
+    <Navbar />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-[63px]">
       {/* 📊 Date wise Attendance (Today) */}
-      <div className="bg-white rounded-2xl shadow p-4">
+      <div className="bg-[#FAF9F6] rounded-2xl shadow p-4">
         <h2 className="text-lg font-semibold mb-4">
           Date wise Attendance (Today)
         </h2>
@@ -82,7 +85,7 @@ export default function AttendanceStats() {
       </div>
 
       {/* 📊 Date wise Attendance (Last 7 Days) */}
-      <div className="bg-white rounded-2xl shadow p-4">
+      <div className="bg-[#FAF9F6] rounded-2xl shadow p-4">
         <h2 className="text-lg font-semibold mb-4">
           Date wise Attendance (Last 7 Working Days)
         </h2>
@@ -129,5 +132,6 @@ export default function AttendanceStats() {
       </div>
        <Chatbot />
     </div>
+    </>
   );
 }
