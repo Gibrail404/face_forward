@@ -17,7 +17,7 @@ exports.addEmployee = async (req, res) => {
     await employee.save();
 
     const msg = `Hi ${name},\nWelcome to the organization. You have been successfully registered.`;
-    await sendMail.sendMail(email, 'Employee Registered', msg);
+    await sendMail(email, 'Employee Registered', msg);
 
     res.status(200).json({ message: "Employee added successfully" });
   } catch (err) {

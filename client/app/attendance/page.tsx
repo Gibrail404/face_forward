@@ -31,7 +31,7 @@ export default function Attendance() {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/sheet");
+        const res = await fetch("http://localhost:5000/api/attendance/sheet");
         const data = await res.json();
         setRecords(data);
       } catch (err) {
@@ -53,8 +53,6 @@ export default function Attendance() {
 
   // Export Excel
   const exportToExcel = () => {
-    if (!filteredRecords.length) return;
-
     const ws = XLSX.utils.json_to_sheet(
       filteredRecords.map((r) => ({
         ID: r._id,
@@ -97,12 +95,7 @@ export default function Attendance() {
           {/* Download Excel */}
           <button
             onClick={exportToExcel}
-            disabled={!filteredRecords.length} // disable if no records
-            className={`px-4 py-2 rounded ${
-              filteredRecords.length
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-300 text-gray-600 cursor-not-allowed"
-            }`}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
             Download Excel
           </button>
@@ -123,55 +116,52 @@ export default function Attendance() {
         </select>
       </div>
 
-      {/* Attendance table or NoRec image */}
-      {filteredRecords.length ? (
-        <div className="overflow-x-auto shadow-md rounded">
-          <table className="w-full border-collapse border">
-            <thead>
-              <tr className="bg-gray-200 text-left">
-                <th className="border p-2">ID</th>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Department</th>
-                <th className="border p-2">Punch In</th>
-                <th className="border p-2">Punch Out</th>
-                <th className="border p-2">Date</th>
-                <th className="border p-2">Status</th>
+      {/* Attendance table */}
+      <div className="overflow-x-auto shadow-md rounded">
+        <table className="w-full border-collapse border">
+          <thead>
+            <tr className="bg-gray-200 text-left">
+              <th className="border p-2">ID</th>
+              <th className="border p-2">Name</th>
+              <th className="border p-2">Department</th>
+              <th className="border p-2">Punch In</th>
+              <th className="border p-2">Punch Out</th>
+              <th className="border p-2">Date</th>
+              <th className="border p-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRecords.slice(0, pageSize).map((r) => (
+              <tr key={r._id} className="hover:bg-gray-50">
+                <td className="border p-2">{r._id}</td>
+                <td className="border p-2">{r.emp_id?.name}</td>
+                <td className="border p-2">{r.emp_id?.department}</td>
+                <td className="border p-2">{r.time?.punch_in || "-"}</td>
+                <td className="border p-2">{r.time?.punch_out || "-"}</td>
+                <td className="border p-2">{r.date.split("T")[0]}</td>
+                <td
+                  className={`border p-2 font-semibold ${
+                    r.status === "Present"
+                      ? "text-green-600"
+                      : r.status === "Absent"
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                  }`}
+                >
+                  {r.status}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredRecords.slice(0, pageSize).map((r) => (
-                <tr key={r._id} className="hover:bg-gray-50">
-                  <td className="border p-2">{r._id}</td>
-                  <td className="border p-2">{r.emp_id?.name}</td>
-                  <td className="border p-2">{r.emp_id?.department}</td>
-                  <td className="border p-2">{r.time?.punch_in || "-"}</td>
-                  <td className="border p-2">{r.time?.punch_out || "-"}</td>
-                  <td className="border p-2">{r.date.split("T")[0]}</td>
-                  <td
-                    className={`border p-2 font-semibold ${
-                      r.status === "Present"
-                        ? "text-green-600"
-                        : r.status === "Absent"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
-                    {r.status}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="flex justify-center items-center py-16">
-          <img
-            src="/static/NoRec.png"
-            alt="No Records"
-            className="w-64 h-64 object-contain"
-          />
-        </div>
-      )}
+            ))}
+            {!filteredRecords.length && (
+              <tr>
+                <td colSpan={7} className="text-center p-4 text-gray-500">
+                  No records found for {selectedDate}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
