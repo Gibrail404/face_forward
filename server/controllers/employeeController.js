@@ -88,7 +88,7 @@ exports.getEmployee = async (req, res) => {
 
         const emp = await Employee.findById(bestMatch._id);
         const today = new Date();
-        const dateOnly = new Date(today.toDateString()); // strip time part
+        const dateOnly = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
 
         // Find today's attendance
         let attendance = await Attendance.findOne({
@@ -111,11 +111,18 @@ exports.getEmployee = async (req, res) => {
 
           await attendance.save();
 
-          await sendMail(
-            emp.email,
-            "Punch In Successful",
-            `Hello ${emp.name}, you punched in at ${currentTime}`
-          );
+          try {
+            await sendMail(
+              emp.email,
+              "Punch In Successful",
+              `Hello ${emp.name}, you punched in at ${currentTime}`
+            );
+            console.log(`Email sent successfully to ${emp.email}`);
+          } catch (err) {
+            console.error(`Failed to send email to ${emp.email}:`, err);
+            // Optional: handle retry, save to DB, or notify admin
+          }
+
         } else {
           // Update punch_out every time
           attendance.time.punch_out = currentTime;
@@ -124,8 +131,21 @@ exports.getEmployee = async (req, res) => {
           const [h1, m1, s1] = attendance.time.punch_in.split(":").map(Number);
           const [h2, m2, s2] = attendance.time.punch_out.split(":").map(Number);
 
-          const punchInDate = new Date(today.setHours(h1, m1, s1, 0));
-          const punchOutDate = new Date(new Date().setHours(h2, m2, s2, 0));
+          // Assuming h1,m1,s1 and h2,m2,s2 are hours, minutes, seconds
+          const punchInDate = new Date(Date.UTC(
+            today.getUTCFullYear(),
+            today.getUTCMonth(),
+            today.getUTCDate(),
+            h1, m1, s1, 0
+          ));
+
+          const now = new Date();
+          const punchOutDate = new Date(Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+            h2, m2, s2, 0
+          ));
 
           const diffMs = punchOutDate - punchInDate;
           const diffHrs = diffMs / (1000 * 60 * 60);
@@ -137,13 +157,18 @@ exports.getEmployee = async (req, res) => {
 
           // 📧 Only send mail if worked >= 8 hours
           if (diffHrs >= 8) {
-            await sendMail(
-              emp.email,
-              "Punch Out Successful",
-              `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(
-                2
-              )} hrs`
-            );
+            try {
+              await sendMail(
+                emp.email,
+                "Punch Out Successful",
+                `Hello ${emp.name}, you punched out at ${currentTime}. Total worked: ${diffHrs.toFixed(
+                  2
+                )} hrs`
+              );
+              console.log(`Email sent successfully to ${emp.email}`);
+            } catch (error) {
+              console.error(`Failed to send punch-out email to ${emp.email}`, error);
+            }
           }
         }
       } else {
