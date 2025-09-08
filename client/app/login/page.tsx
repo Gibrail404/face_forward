@@ -15,18 +15,18 @@ export default function LoginPage() {
     password: "",
   });
 
-  useEffect(() => {
-    // Redirect to home if token exists
-    try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        router.replace("/"); // replace so user can't go back to login with back button
-      }
-    } catch (e) {
-      // localStorage might be unavailable in some envs — ignore
-      console.warn("Could not access localStorage", e);
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   // Redirect to home if token exists
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     if (token) {
+  //       router.replace("/"); // replace so user can't go back to login with back button
+  //     }
+  //   } catch (e) {
+  //     // localStorage might be unavailable in some envs — ignore
+  //     console.warn("Could not access localStorage", e);
+  //   }
+  // }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
