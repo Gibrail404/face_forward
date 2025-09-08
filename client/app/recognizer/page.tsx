@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SIMILARITY_THRESHOLD = 0.96; // strict matching
 const DETECTION_INTERVAL = 500; // detection every 500ms
@@ -156,6 +158,9 @@ export default function FaceDetectionWithAPI() {
                             body: JSON.stringify({ descriptor: Array.from(f.embedding) }),
                         });
                         const data = await res.json();
+                        if (data?.greeting) {
+                            toast.success(`${data.greeting[0]}\n ${data.greeting[1]}`, { position: "bottom-left" });
+                        }
                         f.name = data?.employee?.name || "Unknown";
                         f.id = data?.employee?.id;
                     } catch (err) {
@@ -210,6 +215,7 @@ export default function FaceDetectionWithAPI() {
                     className="absolute top-0 left-0 h-full w-auto pointer-events-none"
                 />
             </div>
+            <ToastContainer />
         </div>
     );
 }

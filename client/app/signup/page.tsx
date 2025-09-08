@@ -47,15 +47,15 @@ export default function SignupPage() {
       });
 
       const data = await res.json();
-     if (res.ok) {
-  toast.success("🎉 Registration successful!", { position: "top-right" });
-  
-  setTimeout(() => {
-    window.location.href = "/"; // redirect after success
-  }, 2000);
-} else {
-  toast.error(data.message || "❌ Registration failed", { position: "top-right" });
-}
+      if (res.ok) {
+        toast.success("🎉 Registration successful!", { position: "top-right" });
+
+        setTimeout(() => {
+          window.location.href = "/"; // redirect after success
+        }, 2000);
+      } else {
+        toast.error(data.message || "❌ Registration failed", { position: "top-right" });
+      }
     } catch (err) {
       toast.error("🚨 Server error. Please try again later.", { position: "top-right" });
     }
@@ -63,12 +63,12 @@ export default function SignupPage() {
 
   return (
     <section className="min-h-screen bg-gray-100 flex items-center justify-center bg-cover" style={{ backgroundImage: "url('/static/bg.jpg')" }}>
-       {/* <Navbar /> */}
+      {/* <Navbar /> */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-4xl">
         <div className="flex flex-col lg:flex-row">
           {/* Form */}
           <div className="w-full lg:w-1/2 p-8">
-           {/* button for home */}
+            {/* button for home */}
             <Link href="/" passHref>
               <button
                 className="bg-white text-center w-48 rounded-2xl h-10 relative text-black text-lg font-semibold group mb-6"
@@ -132,7 +132,7 @@ export default function SignupPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
-                  type="email" 
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -200,7 +200,7 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
-          {/* Toast container */}
+      {/* Toast container */}
       <ToastContainer />
     </section>
   );

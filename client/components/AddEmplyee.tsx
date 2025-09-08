@@ -5,7 +5,8 @@ import React, { useState, useRef, useEffect, Dispatch, SetStateAction } from "re
 import * as faceapi from "face-api.js";
 import FaceMoodBox from "./face";
 import api from "@/utils/api";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: any, setUpdateUser: any ,setGetListing:Dispatch<SetStateAction<boolean>>}) => {
   const [formData, setFormData] = useState({
@@ -277,8 +278,8 @@ const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: 
           toast.error(is_success.message || "Error saving employee")
           return;
         }
-
-        toast.success("✅ Employee added successfully");
+        
+        toast.success("Employee added successfully", { position: "bottom-left" });
         setStatus("✅ Employee added successfully");
         setGetListing(true);
       }
@@ -417,6 +418,8 @@ const AddEmployee = ({ updateUser, setUpdateUser,setGetListing }: { updateUser: 
       <div className="mt-6 px-6 py-3 bg-white shadow-md rounded-xl text-center max-w-max ms-auto me-auto">
         <p className="text-gray-700 font-medium">{status}</p>
       </div>
+
+      <ToastContainer />
     </div>
 
   );
