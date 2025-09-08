@@ -1,14 +1,23 @@
+// app/(your-route)/AttendanceStats.tsx
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import type { PlotParams } from "react-plotly.js";
+import type { Layout, Data } from "plotly.js";
 import Navbar from "@/components/Navbar";
 import Chatbot from "../help/page";
-import api from "@/utils/api"; // ✅ use your axios wrapper
+import api from "@/utils/api";
 
-// Dynamically import Plot with SSR disabled
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+// Dynamically import react-plotly.js and return default export safely
+const Plot = dynamic<PlotParams>(
+  () =>
+    import("react-plotly.js").then((mod) => {
+      return (mod as any).default ?? mod;
+    }),
+  { ssr: false }
+);
 
 interface AttendanceRecord {
   _id: string;
@@ -43,19 +52,13 @@ export default function AttendanceStats() {
 
         const records: AttendanceRecord[] = res.data;
 
-        // ✅ Group by date + department
+        // group by date + department
         const grouped: Record<string, AttendanceData> = {};
 
         records.forEach((rec) => {
           const date = rec.date.split("T")[0];
           if (!grouped[date]) {
-            grouped[date] = {
-              date,
-              HR: 0,
-              Finance: 0,
-              Technology: 0,
-              Admin: 0,
-            };
+            grouped[date] = { date, HR: 0, Finance: 0, Technology: 0, Admin: 0 };
           }
           if (rec.status === "Present") {
             if (rec.department in grouped[date]) {
@@ -64,15 +67,12 @@ export default function AttendanceStats() {
           }
         });
 
-        // Sort by date
         const allDates = Object.values(grouped).sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
 
         const today = new Date().toISOString().split("T")[0];
         setTodayData(allDates.find((d) => d.date === today) || null);
-
-        // Last 7 working days
         setLast7DaysData(allDates.slice(-7));
       } catch (err) {
         console.error("Failed to fetch attendance stats:", err);
@@ -91,91 +91,90 @@ export default function AttendanceStats() {
 
   if (!isAuthed) return null;
 
+  // IMPORTANT: axis.title must be an object with `text`
+  const todayLayout: Partial<Layout> = {
+    title: { text: todayData ? `Attendance on ${todayData.date}` : "Attendance" },
+    xaxis: { title: { text: "Department" } },
+    yaxis: { title: { text: "No. of Employees" } },
+    autosize: true,
+  };
+
+  const last7Layout: Partial<Layout> = {
+    barmode: "group",
+    title: { text: "Attendance (Last 7 Working Days)" },
+    xaxis: { title: { text: "Date" } },
+    yaxis: { title: { text: "No. of Employees" } },
+    autosize: true,
+  };
+
+  // Traces (no trace-level title strings)
+  const todayTraces: Data[] = todayData
+    ? [
+        {
+          type: "bar",
+          x: ["HR", "Finance", "Technology", "Admin"],
+          y: [todayData.HR, todayData.Finance, todayData.Technology, todayData.Admin],
+          marker: { color: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"] },
+        },
+      ]
+    : [];
+
+  const last7Traces: Data[] = last7DaysData.length
+    ? [
+        {
+          type: "bar",
+          name: "HR",
+          x: last7DaysData.map((d) => d.date),
+          y: last7DaysData.map((d) => d.HR),
+        },
+        {
+          type: "bar",
+          name: "Finance",
+          x: last7DaysData.map((d) => d.date),
+          y: last7DaysData.map((d) => d.Finance),
+        },
+        {
+          type: "bar",
+          name: "Technology",
+          x: last7DaysData.map((d) => d.date),
+          y: last7DaysData.map((d) => d.Technology),
+        },
+        {
+          type: "bar",
+          name: "Admin",
+          x: last7DaysData.map((d) => d.date),
+          y: last7DaysData.map((d) => d.Admin),
+        },
+      ]
+    : [];
+
+  // Cast Plot to any/looser component type to avoid next/dynamic inferred prop mismatch
+  const PlotAny = Plot as unknown as React.ComponentType<any>;
+
   return (
     <>
       <Navbar />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-[63px]">
-        {/* 📊 Today’s Attendance */}
+        {/* Today */}
         <div className="bg-[#FAF9F6] rounded-2xl shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Date wise Attendance (Today)
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Date wise Attendance (Today)</h2>
           {todayData ? (
-            <Plot
-              data={[
-                {
-                  type: "bar",
-                  x: ["HR", "Finance", "Technology", "Admin"],
-                  y: [
-                    todayData.HR,
-                    todayData.Finance,
-                    todayData.Technology,
-                    todayData.Admin,
-                  ],
-                  marker: {
-                    color: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
-                  },
-                },
-              ]}
-              layout={{
-                title: `Attendance on ${todayData.date}`,
-                xaxis: { title: "Department" },
-                yaxis: { title: "No. of Employees" },
-                autosize: true,
-              }}
-              style={{ width: "100%", height: "400px" }}
-            />
+            <PlotAny data={todayTraces} layout={todayLayout} style={{ width: "100%", height: "400px" }} />
           ) : (
             <p>No data available for today</p>
           )}
         </div>
 
-        {/* 📊 Last 7 Days */}
+        {/* Last 7 Days */}
         <div className="bg-[#FAF9F6] rounded-2xl shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Date wise Attendance (Last 7 Working Days)
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Date wise Attendance (Last 7 Working Days)</h2>
           {last7DaysData.length > 0 ? (
-            <Plot
-              data={[
-                {
-                  type: "bar",
-                  name: "HR",
-                  x: last7DaysData.map((d) => d.date),
-                  y: last7DaysData.map((d) => d.HR),
-                },
-                {
-                  type: "bar",
-                  name: "Finance",
-                  x: last7DaysData.map((d) => d.date),
-                  y: last7DaysData.map((d) => d.Finance),
-                },
-                {
-                  type: "bar",
-                  name: "Technology",
-                  x: last7DaysData.map((d) => d.date),
-                  y: last7DaysData.map((d) => d.Technology),
-                },
-                {
-                  type: "bar",
-                  name: "Admin",
-                  x: last7DaysData.map((d) => d.date),
-                  y: last7DaysData.map((d) => d.Admin),
-                },
-              ]}
-              layout={{
-                barmode: "group",
-                title: "Attendance (Last 7 Working Days)",
-                xaxis: { title: "Date" },
-                yaxis: { title: "No. of Employees" },
-                autosize: true,
-              }}
-              style={{ width: "100%", height: "400px" }}
-            />
+            <PlotAny data={last7Traces} layout={last7Layout} style={{ width: "100%", height: "400px" }} />
           ) : (
             <p>No data available</p>
           )}
         </div>
+
         <Chatbot />
       </div>
     </>

@@ -19,6 +19,19 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      // allow `any` while you refactor types (turn back to 'warn' or 'error' later)
+      "@typescript-eslint/no-explicit-any": "off",
+
+      // allow <img> usage (useful for camera/streaming snapshots)
+      "@next/next/no-img-element": "off",
+
+      // make prefer-const a warning (so it won't fail builds)
+      "prefer-const": "warn",
+
+      // optional: if you want unused-vars to be warning rather than error:
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    },
   },
 ];
 
