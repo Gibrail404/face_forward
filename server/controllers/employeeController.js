@@ -123,6 +123,18 @@ exports.getEmployee = async (req, res) => {
             // Optional: handle retry, save to DB, or notify admin
           }
 
+          return res.status(200).json({
+            message: "Employee recognized",
+            greeting: [`Good Morning ${bestMatch.name}`, `Punch In Successfull`],
+            employee: {
+              id: bestMatch._id,
+              emp_id: bestMatch.emp_id,
+              name: bestMatch.name,
+              department: bestMatch.department,
+              email: bestMatch.email
+            },
+            similarityScore: bestMatch.score, // lower = closer for euclidean
+          });
         } else {
           // Update punch_out every time
           attendance.time.punch_out = currentTime;
@@ -170,6 +182,18 @@ exports.getEmployee = async (req, res) => {
               console.error(`Failed to send punch-out email to ${emp.email}`, error);
             }
           }
+
+          return res.status(200).json({
+            message: "Employee recognized",
+            employee: {
+              id: bestMatch._id,
+              emp_id: bestMatch.emp_id,
+              name: bestMatch.name,
+              department: bestMatch.department,
+              email: bestMatch.email
+            },
+            similarityScore: bestMatch.score, // lower = closer for euclidean
+          });
         }
       } else {
         console.log("No registered user found (too different)");
@@ -178,25 +202,9 @@ exports.getEmployee = async (req, res) => {
 
     } else {
       console.log("No matches at all");
-    }
-
-    if (!result.length) {
       return res.status(404).json({ message: "Employee not recognized" });
     }
 
-    const bestMatch = result[0];
-
-    res.status(200).json({
-      message: "Employee recognized",
-      employee: {
-        id: bestMatch._id,
-        emp_id: bestMatch.emp_id,
-        name: bestMatch.name,
-        department: bestMatch.department,
-        email: bestMatch.email
-      },
-      similarityScore: bestMatch.score, // lower = closer for euclidean
-    });
   } catch (err) {
     console.error("Error in getEmployee:", err);
     res.status(500).json({ message: "Server Error" });
