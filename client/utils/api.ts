@@ -12,7 +12,7 @@ declare module 'axios' {
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import Router from 'next/router';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'https://face-forward.onrender.com';
 const REQUEST_TIMEOUT = 15000; // ms
 const GET_MAX_RETRIES = 2; // number of GET retries on transient errors
 

@@ -152,7 +152,7 @@ export default function FaceDetectionWithAPI() {
                 if (f.name === "Unknown" || now - f.lastApiCall > COOLDOWN_MS) {
                     try {
                         f.lastApiCall = now;
-                        const res = await fetch("http://localhost:5000/api/employees/match", {
+                        const res = await fetch("https://face-forward.onrender.com/api/employees/match", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ descriptor: Array.from(f.embedding) }),

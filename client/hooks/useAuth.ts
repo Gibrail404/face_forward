@@ -80,7 +80,7 @@ export const useAuth = ({ redirectTo = "/", verifyWithServer  = true } = {}) => 
 
     const verifyUser = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/me", {
+        const res = await fetch("https://face-forward.onrender.com/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
