@@ -7,6 +7,7 @@ This system improves efficiency for both employees and HR departments by automat
 
 ---
 
+
 ## 📖 About the Project  
 
 Traditional attendance systems rely on **ID cards, biometric fingerprints, or manual registers** — all of which are prone to errors, delays, and fraud.  
@@ -18,6 +19,13 @@ Face Forward solves these problems by:
 - Providing **attendance analytics** with visual reports.  
 
 This makes attendance management **contactless, secure, and scalable** for organizations of any size.  
+
+---
+
+## 🏆 Hackathon Project  
+
+This project was built during my **Office Hackathon** 🚀.  
+It showcases how **AI + Web Development** can modernize traditional systems and bring real-world impact to workplace management. 
 
 ---
 
@@ -87,6 +95,15 @@ This makes attendance management **contactless, secure, and scalable** for organ
 - **Auth**: JWT, bcryptjs  
 - **Email**: SendGrid / Nodemailer  
 - **Data Viz**: Plotly.js  
+
+---
+## 🙌 Thanks To My Teammates  
+
+Big thanks to my amazing teammates who contributed to this hackathon project:  
+
+- [@Hrithikrana377](https://github.com/Hrithikrana377) – Hrithik Rana  
+- [@mdumair0](https://github.com/mdumair0) – Mohammad Umair  
+- [@JyotiDev95](https://github.com/JyotiDev95) – Jyoti Prakash  
 
 ---
 
