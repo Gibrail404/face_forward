@@ -33,7 +33,6 @@ It showcases how **AI + Web Development** can modernize traditional systems and 
 
 ![App Screenshot](./screenshot.jpg)  
 
-*(Replace with an actual screenshot of your dashboard/UI)*  
 
 ---
 
