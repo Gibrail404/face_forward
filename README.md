@@ -38,7 +38,7 @@ It showcases how **AI + Web Development** can modernize traditional systems and 
 
 ## 🌐 Demo  
 
-🔗 [Live Demo](https://face-forward-gibrail-zaidis-projects.vercel.app/)  
+🔗 [Live Demo](https://face-forward-iota.vercel.app/)  
 
 ---
 
